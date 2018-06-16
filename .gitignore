@@ -102,3 +102,5 @@ ENV/
 
 *.log
 .idea/
+
+token

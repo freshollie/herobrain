@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aiohttp = "*"
+"bs4" = "*"
+nltk = "*"
+aiodns = "*"
+cchardet = "*"
+colorama = "*"
+lomond = "*"
+Unidecode = "*"
+
+[dev-packages]
+pylint = "*"
+
+[requires]
+python_version = "3.6"
+
+[scripts]
+nltk-install= "python3.6 -m nltk.downloader all"

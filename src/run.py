@@ -1,0 +1,21 @@
+import logging
+import argparse
+from service import HQwackBot
+
+import colorama
+
+# Set up color-coding
+colorama.init()
+
+# Set up logging
+logging.basicConfig(level="INFO")
+
+# Get the token as input
+parser = argparse.ArgumentParser(description="hqwack-reporter")
+parser.add_argument("-t", "--token", dest="token", required=True)
+parser.add_argument("-s", "--hqwack-interface", dest="interface", default="http://test:8080")
+
+args = parser.parse_args()
+
+service = HQwackBot(args.token, args.interface)
+service.run()

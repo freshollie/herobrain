@@ -10,15 +10,14 @@ import search
 punctuation_to_none = str.maketrans({key: None for key in "!\"#$%&\'()*+,-.:;<=>?@[\\]^_`{|}~�"})
 punctuation_to_space = str.maketrans({key: " " for key in "!\"#$%&\'()*+,-.:;<=>?@[\\]^_`{|}~�"})
 
-
-async def answer_question(question, original_answers):
+async def perform(question, original_answers):
     print("Searching")
     start = time.time()
 
     answers = []
-    for ans in original_answers:
-        answers.append(ans.translate(punctuation_to_none))
-        answers.append(ans.translate(punctuation_to_space))
+    for answer in original_answers:
+        answers.append(answer.translate(punctuation_to_none))
+        answers.append(answer.translate(punctuation_to_space))
     answers = list(dict.fromkeys(answers))
     print(answers)
 
