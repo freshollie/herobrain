@@ -33,3 +33,20 @@ class HQwackInterface:
             print("- %s" % answer)
         print()
     
+    def report_prediction(self, question_num, answer_predictions):
+        pass
+    
+    def report_round_end(self, answer_counts, correct_answer, eliminated, advancing):
+        self._print_gap()
+        print("Question over!")
+        for answer in answer_counts:
+            print(f'- {answer}({answer_counts[answer]}){" <- Correct" if answer == correct_answer else ""}')
+        
+        print()
+        print(f"{eliminated} eliminated")
+        print(f"{advancing} advancing")
+        pass
+    
+    def report_finished(self):
+        self._print_gap()
+        print("Game has finished")

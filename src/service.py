@@ -2,16 +2,17 @@ import asyncio
 import logging
 import os
 import time
+from aiohttp.client_exceptions import ContentTypeError
 from datetime import datetime
 from reporting import HQwackInterface
 import networking
-from player import GameAnalyser
+from player import HQTriviaPlayer
 
-class HQwackBot: 
+class HQwackReporter: 
     GAME_INFO_URL = "https://api-quiz.hype.space/shows/now?type="
 
     def __init__(self, token, interface_addr):
-        self._log = logging.getLogger(HQwackBot.__name__)
+        self._log = logging.getLogger(HQwackReporter.__name__)
         self._log.info("Initialising")
 
         self._interface = HQwackInterface(interface_addr)
@@ -23,37 +24,43 @@ class HQwackBot:
         self._event_loop = asyncio.get_event_loop()
 
     async def _find_game(self):
-        try:
-            response_data = await networking.get_json_response(HQwackBot.GAME_INFO_URL, timeout=1.5, headers=self._headers)
-        except:
-            self._log.error("_find_game: Server response not JSON, retrying...")
-            return
+        while True:
+            try:
+                await asyncio.sleep(1)
+                #response_data={ "broadcast":{"socketUrl": "ws://localhost:8765"} }
+                response_data = await networking.get_json_response(HQwackReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
+            except ContentTypeError:
+                self._log.error("_find_game: Server response not JSON, retrying...")
+                await asyncio.sleep(5)
+                continue
 
-        self._log.debug(response_data)
+            self._log.debug(response_data)
 
-        if "broadcast" not in response_data or response_data["broadcast"] is None:
-            if "error" in response_data and response_data["error"] == "Auth not valid":
-                raise RuntimeError("Connection settings invalid")
+            if "broadcast" not in response_data or response_data["broadcast"] is None:
+                if "error" in response_data and response_data["error"] == "Auth not valid":
+                    raise RuntimeError("Invalid auth token")
+                else:
+                    next_time = datetime.strptime(response_data["nextShowTime"], "%Y-%m-%dT%H:%M:%S.000Z")
+                    prize = response_data["nextShowPrize"]
+
+                    self._interface.report_waiting(next_time, prize)
             else:
-                next_time = datetime.strptime(response_data["nextShowTime"], "%Y-%m-%dT%H:%M:%S.000Z")
-                prize = response_data["nextShowPrize"]
-
-                self._interface.report_waiting(next_time, prize)
-        else:
-            game_socket_addr = response_data["broadcast"]["socketUrl"].replace("https", "wss")
-            return game_socket_addr
-        
-        return None
+                game_socket_addr = response_data["broadcast"]["socketUrl"].replace("https", "wss")
+                self._log.info("Got a game socket %s" % game_socket_addr)
+                return game_socket_addr
+            
+            await asyncio.sleep(5)
     
     async def _main_loop(self):
         while True:
+            # Wait for the next game
             game_socket_addr = await self._find_game()
+
+            self._interface.report_starting()
             
-            if game_socket_addr:
-                player = GameAnalyser(game_socket_addr, self._headers, self._interface)
-                await player.play()
-            else:
-                time.sleep(5)
+            # Play this game
+            player = HQTriviaPlayer(game_socket_addr, self._headers, self._interface)
+            await player.play()
     
     def run(self):
         self._event_loop.run_until_complete(self._main_loop())

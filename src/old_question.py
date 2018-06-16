@@ -1,6 +1,7 @@
 import itertools
 import re
 import time
+import asyncio
 from collections import defaultdict
 
 from colorama import Fore, Style
@@ -10,14 +11,15 @@ import search
 punctuation_to_none = str.maketrans({key: None for key in "!\"#$%&\'()*+,-.:;<=>?@[\\]^_`{|}~�"})
 punctuation_to_space = str.maketrans({key: " " for key in "!\"#$%&\'()*+,-.:;<=>?@[\\]^_`{|}~�"})
 
-async def perform(question, original_answers):
+
+async def answer_question(question, original_answers):
     print("Searching")
     start = time.time()
 
     answers = []
-    for answer in original_answers:
-        answers.append(answer.translate(punctuation_to_none))
-        answers.append(answer.translate(punctuation_to_space))
+    for ans in original_answers:
+        answers.append(ans.translate(punctuation_to_none))
+        answers.append(ans.translate(punctuation_to_space))
     answers = list(dict.fromkeys(answers))
     print(answers)
 
@@ -183,3 +185,11 @@ async def __search_method3(question_keywords, question_key_nouns, answers, rever
     if set(keyword_scores.values()) != {0}:
         return min(keyword_scores, key=keyword_scores.get) if reverse else max(keyword_scores, key=keyword_scores.get)
     return ""
+
+if __name__ == "__main__":
+    question = "A fruit salad would likely include which of these things?"
+    answers = ["Melon", "Corn muffins", "Seltzer water"]
+    
+
+    # Find the probability of answers
+    asyncio.get_event_loop().run_until_complete(answer_question(question, answers))

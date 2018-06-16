@@ -12,9 +12,11 @@ cchardet = "*"
 colorama = "*"
 lomond = "*"
 Unidecode = "*"
+websockets = "*"
 
 [dev-packages]
 pylint = "*"
+rope = "*"
 
 [requires]
 python_version = "3.6"

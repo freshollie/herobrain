@@ -7,6 +7,7 @@ import aiohttp
 from colorama import Fore, Style
 from lomond import WebSocket
 from unidecode import unidecode
+import websockets
 
 log = logging.getLogger(__name__)
 
@@ -14,9 +15,9 @@ async def fetch(url, session, timeout):
     try:
         async with session.get(url, timeout=timeout) as response:
             return await response.text()
-    except Exception:
+    except Exception as e:
         print(f"Server timeout/error to {url}")
-        logging.exception(f"Server timeout/error to {url}")
+        log.error(f"Server timeout/error {url}: {e}")
         return ""
 
 
@@ -24,8 +25,7 @@ async def get_responses(urls, timeout, headers):
     tasks = []
     async with aiohttp.ClientSession(headers=headers) as session:
         for url in urls:
-            task = asyncio.ensure_future(fetch(url, session, timeout))
-            tasks.append(task)
+            tasks.append(fetch(url, session, timeout))
 
         responses = await asyncio.gather(*tasks)
         return responses
@@ -42,7 +42,7 @@ async def get_json_response(url, timeout, headers):
             return await response.json()
 
 
-def make_socket(uri, headers):
+def make_socket_old(uri, headers):
     websocket = WebSocket(uri)
     for header, value in headers.items():
         websocket.add_header(str.encode(header), str.encode(value))
