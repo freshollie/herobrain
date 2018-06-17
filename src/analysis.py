@@ -15,7 +15,7 @@ PUNCTUATION_TO_NONE = str.maketrans({key: None for key in "!\"#$%&\'()*+,-.:;<=>
 PUNCTUATION_TO_SPACE = str.maketrans({key: " " for key in "!\"#$%&\'()*+,-.:;<=>?@[\\]^_`{|}~�"})
 
 class QuestionAnalyser:
-    SEARCH_NUMBER = 5
+    SEARCH_NUMBER = 7
 
     def __init__(self, question_str, answers):
         self._log = logging.getLogger(QuestionAnalyser.__name__)
@@ -112,9 +112,12 @@ class QuestionAnalyser:
         return answer_text_map
 
     async def find_answers(self):
+        # Perform all required searches for information about the question and it's answers
         searches = [self._find_texts_about_question(), self._find_texts_about_answers()]
         texts_about_question, texts_about_answers = await asyncio.gather(*searches)
 
+        # Perfrom analysis on web results
+        # Returning a confidence fraction per answer
         analysis_1 = _analysis_method1(texts_about_question, self._parsed_answers, self._is_opposite)
         analysis_2 = _analysis_method2(texts_about_question, self._parsed_answers, self._is_opposite)
         analysis_3 = _analysis_method3(texts_about_answers, 
@@ -124,10 +127,12 @@ class QuestionAnalyser:
                                         self._is_opposite)
         self._log.debug((analysis_1, analysis_2, analysis_3))
 
+        self._log.info(f"Analysed {QuestionAnalyser.SEARCH_NUMBER * 2} pages, Reading {sum(map(len, texts_about_question)) + sum(map(len, texts_about_answers.values()))} words")
+        
+        # Combine the confidence fractions, giving 1 and 2 a higher confience than 3
         combined = {}
         for answer in analysis_1:
             combined[self._parsed_answers_to_answer[answer]] = analysis_1[answer] * 0.4 + analysis_2[answer] * 0.4 + analysis_3[answer] * 0.2
-        
         probs = _generate_probabilities(combined, False)
 
         self._log.debug(f"Prediction: ")
@@ -238,10 +243,7 @@ def _analysis_method3(answer_text_map, question_keywords, question_key_nouns, an
         keyword_scores[answer] = keyword_score
         noun_scores[answer] = noun_score
         answer_noun_scores_map[answer] = noun_score_map
-
     
-
-    predicted_answer = ""
     summed_scores = {}
 
     for answer in keyword_scores:

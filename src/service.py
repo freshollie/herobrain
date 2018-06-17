@@ -26,9 +26,9 @@ class HQwackReporter:
     async def _find_game(self):
         while True:
             try:
-                await asyncio.sleep(1)
-                response_data={ "broadcast":{ "socketUrl": "ws://localhost:8765"} }
-                #response_data = await networking.get_json_response(HQwackReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
+                #await asyncio.sleep(1)
+                #response_data={ "broadcast":{ "socketUrl": "ws://localhost:8765"} }
+                response_data = await networking.get_json_response(HQwackReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
             except ContentTypeError:
                 self._log.error("_find_game: Server response not JSON, retrying...")
                 await asyncio.sleep(5)

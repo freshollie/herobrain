@@ -39,10 +39,3 @@ async def get_json_response(url, timeout, headers):
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(url, timeout=timeout) as response:
             return await response.json()
-
-
-def make_socket_old(uri, headers):
-    websocket = WebSocket(uri)
-    for header, value in headers.items():
-        websocket.add_header(str.encode(header), str.encode(value))
-    return websocket

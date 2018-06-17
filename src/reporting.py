@@ -29,7 +29,7 @@ class HQwackInterface:
         self._print_gap()
         print("Game starting!")
         self._score = 0
-        self._num_rounds = 0
+        self._round_num = 0
         self._predicted_answer = None
     
     def report_question(self, question, answers, question_num, num_questions):
@@ -43,7 +43,7 @@ class HQwackInterface:
         print()
 
         self._question_time = time.time()
-        self._num_rounds = num_questions
+        self._round_num = question_num
     
     def report_analysis(self, analysis):
         print("### Analysis ###")
@@ -53,17 +53,17 @@ class HQwackInterface:
     def report_prediction(self, question_num, answer_predictions):
         speed = round(time.time() - self._question_time, 2)
         print()
-        print("Analysis: ")
+        print("Prediction: ")
         self._predicted_answer = max(answer_predictions.items(), key=operator.itemgetter(1))[0]
 
         for answer in answer_predictions:
-            print(f" - {answer} - {round(answer_predictions[answer] * 100)}% {'<- Predicted' if answer == self._predicted_answer else ''}")
+            print(f" - {answer} - {round(answer_predictions[answer] * 100)}% {'<- Most probable' if answer == self._predicted_answer else ''}")
         print()
         print(f"Speed: {speed}s")
     
     def report_round_end(self, answer_counts, correct_answer, eliminated, advancing):
         self._print_gap()
-        print("Question over!")
+        print("Round over!")
         for answer in answer_counts:
             print(f'- {answer}({answer_counts[answer]}){" <- Answer" if answer == correct_answer else ""}')
         
@@ -75,7 +75,7 @@ class HQwackInterface:
             self._score += 1
             print("Predicted correctly!")
 
-        print(f"Prediction score: {self._score}/{self._num_rounds}")
+        print(f"Prediction score: {self._score}/{self._round_num}")
     
     def report_finished(self):
         self._print_gap()
