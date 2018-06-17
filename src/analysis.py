@@ -2,11 +2,14 @@ import itertools
 import re
 import time
 import asyncio
+import logging
 from collections import defaultdict
 
 from colorama import Fore, Style
 
 import search
+
+log = logging.getLogger(__name__)
 
 PUNCTUATION_TO_NONE = str.maketrans({key: None for key in "!\"#$%&\'()*+,-.:;<=>?@[\\]^_`{|}~�"})
 PUNCTUATION_TO_SPACE = str.maketrans({key: " " for key in "!\"#$%&\'()*+,-.:;<=>?@[\\]^_`{|}~�"})
@@ -15,17 +18,21 @@ class QuestionAnalyser:
     SEARCH_NUMBER = 5
 
     def __init__(self, question_str, answers):
+        self._log = logging.getLogger(QuestionAnalyser.__name__)
         self._original_answers = answers
         self._question = question_str
         
         self._parsed_answers = []
+        self._parsed_answers_to_answer = {}
+
         self._is_opposite = False
         self._question_keywords = []
         self._unique_question_keywords =[]
         self._key_nouns = {}
-        self._analyse()
+        self._extract_info()
 
-    def _analyse(self):
+
+    def _extract_info(self):
         '''
         Analyse the question, extracting the key
         information, ready to perform a search
@@ -35,11 +42,11 @@ class QuestionAnalyser:
         ### Remove punctuation and other symbols from the answers ####
         self._parsed_answers = []
         for answer in self._original_answers:
-            self._parsed_answers.append(answer.translate(PUNCTUATION_TO_NONE))
-            self._parsed_answers.append(answer.translate(PUNCTUATION_TO_SPACE))
+            answer = answer.replace("'s ", "s ")
+            self._parsed_answers.append(answer.translate(PUNCTUATION_TO_SPACE).lower())
+            self._parsed_answers_to_answer[self._parsed_answers[-1]] = answer
         # Remove dupilcates
         self._parsed_answers = list(dict.fromkeys(self._parsed_answers))
-        print(self._parsed_answers)
 
         
         ### Work out if this queston is actually the opposite ####
@@ -78,10 +85,6 @@ class QuestionAnalyser:
                                     " ".join([w for idx, w in enumerate(self._question.split(" ")) if idx != q_word_location])))
         self._key_nouns = {noun.lower() for noun in self._key_nouns}
 
-
-        print(f"Question nouns: {self._key_nouns}")
-        print(self._question_keywords)
-
     def get_analysis(self):
         return {
             "nouns": self._key_nouns,
@@ -117,11 +120,39 @@ class QuestionAnalyser:
         analysis_3 = _analysis_method3(texts_about_answers, 
                                         self._unique_question_keywords,
                                         self._key_nouns, 
-                                        self._original_answers, 
+                                        self._parsed_answers, 
                                         self._is_opposite)
+        self._log.debug((analysis_1, analysis_2, analysis_3))
 
-        return analysis_1, analysis_2, analysis_3
+        combined = {}
+        for answer in analysis_1:
+            combined[self._parsed_answers_to_answer[answer]] = analysis_1[answer] * 0.4 + analysis_2[answer] * 0.4 + analysis_3[answer] * 0.2
+        
+        probs = _generate_probabilities(combined, False)
 
+        self._log.debug(f"Prediction: ")
+        for answer in probs:
+            self._log.debug(f" - {answer} - {round(probs[answer] * 100)}%")
+
+        return probs
+
+
+def _generate_probabilities(counts, opposite):
+    if opposite:
+        for answer in counts:
+            if counts[answer] > 0:
+                counts[answer] = 1 / counts[answer]
+
+    count_sum = sum(counts.values())
+
+    if count_sum == 0:
+        return counts
+
+    probabilities = {}
+    for answer in counts:
+        probabilities[answer] = (counts[answer] / count_sum)
+    
+    return probabilities
 
 def _analysis_method1(texts, answers, opposite):
     """
@@ -132,23 +163,16 @@ def _analysis_method1(texts, answers, opposite):
     :return: Answer that occurs the most/least in the texts, empty string if there is a tie
     """
     print("Running method 1")
-    counts = {answer.lower(): 0 for answer in answers}
+    counts = {answer: 0 for answer in answers}
 
     for text in texts:
         for answer in counts:
             counts[answer] += len(re.findall(f" {answer} ", text))
 
-    predicted_answer = ""
-
-    # If not all answers have count of 0 and the best value doesn't occur more than once, return the best answer
-    best_value = min(counts.values()) if opposite else max(counts.values())
-    if not all(c == 0 for c in counts.values()) and list(counts.values()).count(best_value) == 1:
-        predicted_answer = min(counts, key=counts.get) if opposite else max(counts, key=counts.get)
+    log.debug(counts)
+    answer_predictions = _generate_probabilities(counts, opposite)
     
-    return {
-        "prediction": predicted_answer,
-        "answers": counts
-    }
+    return answer_predictions
 
 
 def _analysis_method2(texts, answers, reverse):
@@ -166,17 +190,15 @@ def _analysis_method2(texts, answers, reverse):
         for keyword_counts in counts.values():
             for keyword in keyword_counts:
                 keyword_counts[keyword] += len(re.findall(f" {keyword} ", text))
+    counts = {answer: sum(keyword_counts.values()) for answer, keyword_counts in counts.items()}
 
-    counts_sum = {answer: sum(keyword_counts.values()) for answer, keyword_counts in counts.items()}
+    log.debug(counts)
+    answer_predictions = _generate_probabilities(counts, reverse)
 
-    predicted_answer = ""
-    if not all(c == 0 for c in counts_sum.values()):
-        predicted_answer = min(counts_sum, key=counts_sum.get) if reverse else max(counts_sum, key=counts_sum.get)
+    #if not all(c == 0 for c in counts_sum.values()):
+    #    predicted_answer = min(counts_sum, key=counts_sum.get) if reverse else max(counts_sum, key=counts_sum.get)
     
-    return {
-        "prediction": predicted_answer,
-        "analysis": {"answers": counts_sum}
-    }
+    return answer_predictions
 
 
 def _analysis_method3(answer_text_map, question_keywords, question_key_nouns, answers, reverse):
@@ -217,27 +239,15 @@ def _analysis_method3(answer_text_map, question_keywords, question_key_nouns, an
         noun_scores[answer] = noun_score
         answer_noun_scores_map[answer] = noun_score_map
 
-    answer_scores = {answer: dict(scores) for answer, scores in answer_noun_scores_map.items()}
+    
 
     predicted_answer = ""
-    if set(noun_scores.values()) != {0}:
-        predicted_answer =  min(noun_scores, key=noun_scores.get) if reverse else max(noun_scores, key=noun_scores.get)
-    if set(keyword_scores.values()) != {0}:
-        predicted_answer =  min(keyword_scores, key=keyword_scores.get) if reverse else max(keyword_scores, key=keyword_scores.get)
+    summed_scores = {}
 
-    return {
-        "prediction": predicted_answer,
-        "answers": answer_scores,
-        "keywords": keyword_scores,
-        "nouns": noun_scores 
-    }
+    for answer in keyword_scores:
+        # Keywords are worth more than nouns
+        summed_scores[answer] = (keyword_scores[answer] * (2/3)) + (noun_scores[answer] * (1/3))
+    
+    prediction = _generate_probabilities(summed_scores, reverse)
 
-
-if __name__ == "__main__":
-    question = "A fruit salad would likely include which of these things?"
-    answers = ["Melon", "Corn muffins", "Seltzer water"]
-    analyser = QuestionAnalyser(question, answers)
-    print(analyser.get_analysis())
-
-    # Find the probability of answers
-    print(asyncio.get_event_loop().run_until_complete(analyser.find_answers()))
+    return prediction

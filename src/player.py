@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import re
+import operator
 
 from unidecode import unidecode
 
@@ -26,10 +27,12 @@ class HQTriviaPlayer:
         self._interface.report_question(question, answers, number, num_questions)
 
         analyser = QuestionAnalyser(question, answers)
-        print(analyser.get_analysis())
+        self._interface.report_analysis(analyser.get_analysis())
 
         # Find the probability of answers
-        print(await analyser.find_answers())
+        answers = await analyser.find_answers()
+        self._interface.report_prediction(number, answers)
+
     
     async def _on_round_complete(self, answer_counts, correct_answer, eliminated, advancing):
         self._interface.report_round_end(answer_counts, correct_answer, eliminated, advancing)
@@ -92,7 +95,7 @@ class HQTriviaPlayer:
                     # we get a connection closed error
                     async for message in self._game_connection():
                         asyncio.ensure_future(self._handle_event(message), loop=self._event_loop)
-            except websockets.ConnectionClosed:
+            except (websockets.ConnectionClosed, ConnectionResetError):
                 self._log.warning("%s closed unexpectedly" % self._socket_addr)
             except ConnectionRefusedError as e:
                 self._log.error("Could not connect to %s: %s" % (self._socket_addr, e))

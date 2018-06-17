@@ -16,7 +16,6 @@ async def fetch(url, session, timeout):
         async with session.get(url, timeout=timeout) as response:
             return await response.text()
     except Exception as e:
-        print(f"Server timeout/error to {url}")
         log.error(f"Server timeout/error {url}: {e}")
         return ""
 

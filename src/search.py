@@ -7,6 +7,9 @@ from nltk.corpus import stopwords
 from nltk.tag.perceptron import PerceptronTagger
 from nltk.tokenize import RegexpTokenizer
 from unidecode import unidecode
+import logging
+
+log = logging.getLogger(__name__)
 
 import networking
 
@@ -32,7 +35,7 @@ def find_keywords(words):
 def find_nouns(text, num_words, reverse=False):
     tokens = word_tokenize(text)
     tags = [tag for tag in tagger.tag(tokens) if tag[1] != "POS"]
-    print(tags)
+    log.debug(tags)
 
     tags = tags[:num_words] if not reverse else tags[-num_words:]
 
