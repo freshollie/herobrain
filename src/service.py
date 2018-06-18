@@ -11,11 +11,13 @@ from player import HQTriviaPlayer
 class HQwackReporter: 
     GAME_INFO_URL = "https://api-quiz.hype.space/shows/now?type="
 
-    def __init__(self, token, interface_addr):
+    def __init__(self, token, interface_addr, test_socket=None):
         self._log = logging.getLogger(HQwackReporter.__name__)
         self._log.info("Initialising")
 
         self._interface = HQwackInterface(interface_addr)
+
+        self._test_socket = test_socket
 
         self._token = token
         self._headers = {"Authorization": f"Bearer {token}",
@@ -26,9 +28,11 @@ class HQwackReporter:
     async def _find_game(self):
         while True:
             try:
-                #await asyncio.sleep(1)
-                #response_data={ "broadcast":{ "socketUrl": "ws://localhost:8765"} }
-                response_data = await networking.get_json_response(HQwackReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
+                if self._test_socket:
+                    await asyncio.sleep(1)
+                    response_data={ "broadcast":{ "socketUrl": self._test_socket} }
+                else:
+                    response_data = await networking.get_json_response(HQwackReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
             except ContentTypeError:
                 self._log.error("_find_game: Server response not JSON, retrying...")
                 await asyncio.sleep(5)
