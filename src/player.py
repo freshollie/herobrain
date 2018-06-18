@@ -32,7 +32,8 @@ class HQTriviaPlayer:
         self._interface.report_analysis(analyser.get_analysis(), number)
 
         # Find the probability of answers
-        answers = await analyser.find_answers()
+        answers, analysis = await analyser.find_answers()
+        self._interface.report_prediction(number, answers, analysis)
 
         speed = round(time.time() - start_time, 2)
         self._interface.report_prediction(number, answers, speed)
@@ -69,6 +70,9 @@ class HQTriviaPlayer:
 
             await self._on_round_complete(answer_counts, correct, eliminated, advancing)
 
+    def _is_ending_message(self, message):
+        return message["type"] == "broadcastEnded"
+
     async def _game_connection(self):
         self._log.debug("Starting game connection")
         async with websockets.connect(self._socket_addr, extra_headers=self._socket_headers) as socket:
@@ -86,10 +90,8 @@ class HQTriviaPlayer:
                 if "error" in message_data and message_data["error"] == "Auth not valid":
                     self._log.debug(message_data)
                     raise RuntimeError("Bad token")
-                
-                if message_data["type"] != "interaction":
-                    # Something happened
-                    yield message_data
+
+                yield message_data
 
     async def play(self):
             try:
@@ -97,7 +99,10 @@ class HQTriviaPlayer:
                     # Stay in this loop until
                     # we get a connection closed error
                     async for message in self._game_connection():
+                        if self._is_ending_message(message):
+                            return
                         asyncio.ensure_future(self._handle_event(message), loop=self._event_loop)
+
             except (websockets.ConnectionClosed, ConnectionResetError):
                 self._log.warning("%s closed unexpectedly" % self._socket_addr)
             except ConnectionRefusedError as e:

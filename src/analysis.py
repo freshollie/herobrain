@@ -121,25 +121,32 @@ class QuestionAnalyser:
         analysis_1 = _analysis_method1(texts_about_question, self._parsed_answers, self._is_opposite)
         analysis_2 = _analysis_method2(texts_about_question, self._parsed_answers, self._is_opposite)
         analysis_3 = _analysis_method3(texts_about_answers, 
-                                        self._unique_question_keywords,
-                                        self._key_nouns, 
-                                        self._parsed_answers, 
-                                        self._is_opposite)
-        self._log.debug((analysis_1, analysis_2, analysis_3))
+                                       self._unique_question_keywords,
+                                       self._key_nouns, 
+                                       self._parsed_answers, 
+                                       self._is_opposite)
+
+        analysis = (analysis_1, analysis_2, analysis_3)
+        self._log.debug(analysis)
 
         self._log.info(f"Analysed {QuestionAnalyser.SEARCH_NUMBER * 2} pages, Reading {sum(map(len, texts_about_question)) + sum(map(len, texts_about_answers.values()))} words")
         
         # Combine the confidence fractions, giving 1 and 2 a higher confience than 3
-        combined = {}
+        combined_1 = {}
         for answer in analysis_1:
-            combined[self._parsed_answers_to_answer[answer]] = analysis_1[answer] * 0.4 + analysis_2[answer] * 0.4 + analysis_3[answer] * 0.2
-        probs = _generate_probabilities(combined, False)
+            combined_1[answer] = analysis_1[answer] * 0.5 + analysis_2[answer] * 0.5
+        probs_1 = _generate_probabilities(combined_1, False)
+
+        combined_2 = {}
+        for answer in probs_1:
+            combined_2[self._parsed_answers_to_answer[answer]] = probs_1[answer] * 0.8 + analysis_3[answer] * 0.2
+        probs = _generate_probabilities(combined_2, False)
 
         self._log.debug(f"Prediction: ")
         for answer in probs:
             self._log.debug(f" - {answer} - {round(probs[answer] * 100)}%")
 
-        return probs
+        return probs, analysis
 
 
 def _generate_probabilities(counts, opposite):
@@ -147,6 +154,8 @@ def _generate_probabilities(counts, opposite):
         for answer in counts:
             if counts[answer] > 0:
                 counts[answer] = 1 / counts[answer]
+            else:
+                counts[answer] = 100000
 
     count_sum = sum(counts.values())
 
@@ -174,8 +183,9 @@ def _analysis_method1(texts, answers, opposite):
         for answer in counts:
             counts[answer] += len(re.findall(f" {answer} ", text))
 
-    log.debug(counts)
+    log.debug(f"Method 1 counts: {counts}")
     answer_predictions = _generate_probabilities(counts, opposite)
+    log.debug(f"Method 1 weights: {answer_predictions}")
     
     return answer_predictions
 
@@ -197,8 +207,9 @@ def _analysis_method2(texts, answers, reverse):
                 keyword_counts[keyword] += len(re.findall(f" {keyword} ", text))
     counts = {answer: sum(keyword_counts.values()) for answer, keyword_counts in counts.items()}
 
-    log.debug(counts)
+    log.debug(f"Method 2 counts: {counts}")
     answer_predictions = _generate_probabilities(counts, reverse)
+    log.debug(f"Method 2 weights: {answer_predictions}")
 
     #if not all(c == 0 for c in counts_sum.values()):
     #    predicted_answer = min(counts_sum, key=counts_sum.get) if reverse else max(counts_sum, key=counts_sum.get)
@@ -253,3 +264,6 @@ def _analysis_method3(answer_text_map, question_keywords, question_key_nouns, an
     prediction = _generate_probabilities(summed_scores, reverse)
 
     return prediction
+
+if __name__ == "__main__":
+    print(_generate_probabilities({"harry": 10, "sirus": 3, "neville": 20}, True))

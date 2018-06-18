@@ -23,6 +23,12 @@ class HQwackInterface:
         self._num_rounds = 0
         self._predicted_answer = None
         self._event_loop = asyncio.get_event_loop()
+        
+        self._prediction_analysis = None
+        self._question_time = 0
+        self._event_loop = asyncio.get_event_loop()
+
+        self._analysis_correct_counts = [[],[],[]]
 
     async def __do_send(self, endpoint, info):
         url = self._addr + endpoint
@@ -85,11 +91,16 @@ class HQwackInterface:
         
         self._send_info(HQwackInterface.ANALYSIS, {"analysis": analysis, "roundNum": roundNum})
 
+<<<<<<< HEAD
     def report_prediction(self, roundNum, answer_predictions, speed):
+=======
+    def report_prediction(self, question_num, answer_predictions, analysis):
+        speed = round(time.time() - self._question_time, 2)
+>>>>>>> analysis
         print()
         print("Prediction: ")
         self._predicted_answer = max(answer_predictions.items(), key=operator.itemgetter(1))[0]
-
+        self._prediction_analysis = analysis
         for answer in answer_predictions:
             print(f" - {answer} - {round(answer_predictions[answer] * 100)}% {'<- Most probable' if answer == self._predicted_answer else ''}")
         print()
@@ -104,8 +115,13 @@ class HQwackInterface:
     def report_round_end(self, answer_counts, correct_answer, eliminated, advancing):
         self._print_gap()
         print("Round over!")
+
         for answer in answer_counts:
             print(f'- {answer}({answer_counts[answer]}){" <- Answer" if answer == correct_answer else ""}')
+        
+        if self._prediction_analysis:
+            for i in range(len(self._prediction_analysis)):
+                self._analysis_correct_counts[i] = max(self._prediction_analysis[i].items(), key=operator.itemgetter(1))[0]
         
         print()
         print(f"{eliminated} eliminated")
