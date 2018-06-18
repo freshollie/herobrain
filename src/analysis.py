@@ -87,7 +87,7 @@ class QuestionAnalyser:
 
     def get_analysis(self):
         return {
-            "nouns": self._key_nouns,
+            "nouns": list(self._key_nouns),
             "keywords": self._question_keywords,
             "opposite": self._is_opposite,
             "parsedAnswers": self._parsed_answers

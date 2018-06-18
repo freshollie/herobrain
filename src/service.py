@@ -3,7 +3,7 @@ import logging
 import os
 import time
 from aiohttp.client_exceptions import ContentTypeError
-from datetime import datetime
+from datetime import datetime, timezone
 from reporting import HQwackInterface
 import networking
 from player import HQTriviaPlayer
@@ -26,11 +26,11 @@ class HQwackReporter:
     async def _find_game(self):
         while True:
             try:
-                #await asyncio.sleep(1)
-                #response_data={ "broadcast":{ "socketUrl": "ws://localhost:8765"} }
-                response_data = await networking.get_json_response(HQwackReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
-            except ContentTypeError:
-                self._log.error("_find_game: Server response not JSON, retrying...")
+                await asyncio.sleep(1)
+                response_data={ "broadcast":{ "socketUrl": "ws://localhost:8765"} }
+                #response_data = await networking.get_json_response(HQwackReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
+            except (ContentTypeError, TimeoutError):
+                self._log.error("_find_game: Could not get game info from server, retrying...")
                 await asyncio.sleep(5)
                 continue
 
@@ -41,6 +41,7 @@ class HQwackReporter:
                     raise RuntimeError("Invalid auth token")
                 else:
                     next_time = datetime.strptime(response_data["nextShowTime"], "%Y-%m-%dT%H:%M:%S.000Z")
+                    next_time = next_time.replace(tzinfo=timezone.utc)
                     prize = response_data["nextShowPrize"]
 
                     self._interface.report_waiting(next_time, prize)

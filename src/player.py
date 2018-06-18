@@ -4,6 +4,7 @@ import json
 import logging
 import re
 import operator
+import time
 
 from unidecode import unidecode
 
@@ -24,15 +25,17 @@ class HQTriviaPlayer:
         self._event_loop = asyncio.get_event_loop()
     
     async def _play_round(self, question, answers, number, num_questions):
+        start_time = time.time()
         self._interface.report_question(question, answers, number, num_questions)
 
         analyser = QuestionAnalyser(question, answers)
-        self._interface.report_analysis(analyser.get_analysis())
+        self._interface.report_analysis(analyser.get_analysis(), number)
 
         # Find the probability of answers
         answers = await analyser.find_answers()
-        self._interface.report_prediction(number, answers)
 
+        speed = round(time.time() - start_time, 2)
+        self._interface.report_prediction(number, answers, speed)
     
     async def _on_round_complete(self, answer_counts, correct_answer, eliminated, advancing):
         self._interface.report_round_end(answer_counts, correct_answer, eliminated, advancing)

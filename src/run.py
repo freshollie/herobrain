@@ -13,7 +13,7 @@ logging.basicConfig(level="DEBUG")
 # Get the token as input
 parser = argparse.ArgumentParser(description="hqwack-reporter")
 parser.add_argument("-t", "--token", dest="token", required=True)
-parser.add_argument("-s", "--hqwack-interface", dest="interface", default="http://test:8080")
+parser.add_argument("-s", "--hqwack-interface", dest="interface", default="http://localhost:1029")
 
 args = parser.parse_args()
 
