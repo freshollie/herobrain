@@ -23,7 +23,7 @@ class HQwackInterface:
         self._num_rounds = 0
         self._predicted_answer = None
         self._event_loop = asyncio.get_event_loop()
-        
+
         self._prediction_analysis = None
         self._question_time = 0
         self._event_loop = asyncio.get_event_loop()
@@ -91,12 +91,8 @@ class HQwackInterface:
         
         self._send_info(HQwackInterface.ANALYSIS, {"analysis": analysis, "roundNum": roundNum})
 
-<<<<<<< HEAD
-    def report_prediction(self, roundNum, answer_predictions, speed):
-=======
-    def report_prediction(self, question_num, answer_predictions, analysis):
+    def report_prediction(self, question_num, answer_predictions, speed, analysis):
         speed = round(time.time() - self._question_time, 2)
->>>>>>> analysis
         print()
         print("Prediction: ")
         self._predicted_answer = max(answer_predictions.items(), key=operator.itemgetter(1))[0]

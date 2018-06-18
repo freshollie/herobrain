@@ -33,10 +33,9 @@ class HQTriviaPlayer:
 
         # Find the probability of answers
         answers, analysis = await analyser.find_answers()
-        self._interface.report_prediction(number, answers, analysis)
-
         speed = round(time.time() - start_time, 2)
-        self._interface.report_prediction(number, answers, speed)
+        
+        self._interface.report_prediction(number, answers, speed, analysis)
     
     async def _on_round_complete(self, answer_counts, correct_answer, eliminated, advancing):
         self._interface.report_round_end(answer_counts, correct_answer, eliminated, advancing)
