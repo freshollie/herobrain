@@ -13,9 +13,9 @@ import networking
 from analysis import QuestionAnalyser
 
 
-class HQTriviaPlayer:
+class GameHandler:
     def __init__(self, socket_addr, headers, interface):
-        self._log = logging.getLogger(HQTriviaPlayer.__name__)
+        self._log = logging.getLogger(GameHandler.__name__)
         self._log.info("Initialising on %s" % socket_addr)
 
         self._socket_addr = socket_addr
@@ -53,9 +53,9 @@ class HQTriviaPlayer:
             num_questions = message['questionCount']
 
             await self._play_round(question_str, answers, question_num, num_questions)
-
-        elif message["type"] == "questionSummary":
-            # Round is over
+        
+        # Round is over
+        elif message["type"] == "questionSummary":    
             answer_counts ={}
             correct = ""
             for answer in message["answerCounts"]:
@@ -68,9 +68,11 @@ class HQTriviaPlayer:
             eliminated = message['eliminatedPlayersCount']
 
             await self._on_round_complete(answer_counts, correct, eliminated, advancing)
+        elif message["type"] == "interaction":
+            pass
 
     def _is_ending_message(self, message):
-        return message["type"] == "broadcastEnded"
+        return message["type"] == "broadcastEnded" and "reason" not in message
 
     async def _game_connection(self):
         self._log.debug("Starting game connection")
@@ -93,16 +95,16 @@ class HQTriviaPlayer:
                 yield message_data
 
     async def play(self):
-            try:
-                while True:
-                    # Stay in this loop until
-                    # we get a connection closed error
-                    async for message in self._game_connection():
-                        if self._is_ending_message(message):
-                            return
-                        asyncio.ensure_future(self._handle_event(message), loop=self._event_loop)
+        try:
+            while True:
+                # Stay in this loop until
+                # we get a connection closed error
+                async for message in self._game_connection():
+                    if self._is_ending_message(message):
+                        return
+                    asyncio.ensure_future(self._handle_event(message), loop=self._event_loop)
 
-            except (websockets.ConnectionClosed, ConnectionResetError):
-                self._log.warning("%s closed unexpectedly" % self._socket_addr)
-            except ConnectionRefusedError as e:
-                self._log.error("Could not connect to %s: %s" % (self._socket_addr, e))
+        except (websockets.ConnectionClosed, ConnectionResetError):
+            self._log.warning("%s closed unexpectedly" % self._socket_addr)
+        except ConnectionRefusedError as e:
+            self._log.error("Could not connect to %s: %s" % (self._socket_addr, e))

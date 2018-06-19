@@ -109,6 +109,7 @@ class HQHeroInterface:
                                        "best": self._predicted_answer, 
                                        "speed": speed} , 
                          "roundNum": question_num})
+        '''{'type': 'interaction', 'ts': '2018-06-19T14:11:02.525Z', 'itemId': 'chat', 'userId': 12762299, 'metadata': {'userId': 12762299, 'message': 'Morons', 'avatarUrl': 'https://d2xu1hdomh3nrx.cloudfront.net/72x72/a/98/12762299-GOroQ9.jpg', 'interaction': 'chat', 'username': 'Benjy613'}, 'sent': '2018-06-19T14:11:02.529Z'}'''
     
     def report_round_end(self, answer_counts, correct_answer, eliminated, advancing):
         self._print_gap()

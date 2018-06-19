@@ -6,7 +6,7 @@ from aiohttp.client_exceptions import ContentTypeError
 from datetime import datetime, timezone
 from reporting import HQHeroInterface
 import networking
-from player import HQTriviaPlayer
+from game import GameHandler
 
 class HQHeroReporter: 
     GAME_INFO_URL = "https://api-quiz.hype.space/shows/now?type="
@@ -61,12 +61,11 @@ class HQHeroReporter:
         while True:
             # Wait for the next game
             game_socket_addr = await self._find_game()
-
-            self._interface.report_starting()
             
+            self._interface.report_starting()
             # Play this game
-            player = HQTriviaPlayer(game_socket_addr, self._headers, self._interface)
-            await player.play()
+            game = GameHandler(game_socket_addr, self._headers, self._interface)
+            await game.play()
     
     def run(self):
         self._event_loop.run_until_complete(self._main_loop())
