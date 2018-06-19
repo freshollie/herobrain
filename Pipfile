@@ -17,6 +17,7 @@ websockets = "*"
 [dev-packages]
 pylint = "*"
 rope = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.6"

@@ -4,18 +4,18 @@ import os
 import time
 from aiohttp.client_exceptions import ContentTypeError
 from datetime import datetime, timezone
-from reporting import HQwackInterface
+from reporting import HQHeroInterface
 import networking
 from player import HQTriviaPlayer
 
-class HQwackReporter: 
+class HQHeroReporter: 
     GAME_INFO_URL = "https://api-quiz.hype.space/shows/now?type="
 
     def __init__(self, token, interface_addr, test_socket=None):
-        self._log = logging.getLogger(HQwackReporter.__name__)
+        self._log = logging.getLogger(HQHeroReporter.__name__)
         self._log.info("Initialising")
 
-        self._interface = HQwackInterface(interface_addr)
+        self._interface = HQHeroInterface(interface_addr)
 
         self._test_socket = test_socket
 
@@ -33,7 +33,7 @@ class HQwackReporter:
                     await asyncio.sleep(1)
                     response_data={"broadcast": {"socketUrl": self._test_socket}}
                 else:
-                    response_data = await networking.get_json_response(HQwackReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
+                    response_data = await networking.get_json_response(HQHeroReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
             except (ContentTypeError, TimeoutError):
                 self._log.error("_find_game: Could not get game info from server, retrying...")
                 await asyncio.sleep(5)

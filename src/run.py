@@ -1,6 +1,6 @@
 import logging
 import argparse
-from service import HQwackReporter
+from service import HQHeroReporter
 
 import colorama
 
@@ -22,5 +22,5 @@ args = parser.parse_args()
 # Set up logging
 logging.basicConfig(level=args.log_level.upper())
 
-service = HQwackReporter(args.token, args.interface, args.test_socket if args.test else None)
+service = HQHeroReporter(args.token, args.interface, args.test_socket if args.test else None)
 service.run()

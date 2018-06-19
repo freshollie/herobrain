@@ -5,17 +5,17 @@ import operator
 import time
 import datetime
 
-class HQwackInterface:
-    WAITING = "/qwacker/waiting"
-    STARTING = "/qwacker/starting"
-    NEWROUND = "/qwacker/round"
-    ANALYSIS = "/qwacker/analysis"
-    PREDICTION = "/qwacker/prediction"
-    ANSWERS = "/qwacker/answers"
-    FINISHED = "/qwacker/ended"
+class HQHeroInterface:
+    WAITING = "/hero/waiting"
+    STARTING = "/hero/starting"
+    NEWROUND = "/hero/round"
+    ANALYSIS = "/hero/analysis"
+    PREDICTION = "/hero/prediction"
+    ANSWERS = "/hero/answers"
+    FINISHED = "/hero/ended"
     
     def __init__(self, interface_addr):
-        self._log = logging.getLogger(HQwackInterface.__name__)
+        self._log = logging.getLogger(HQHeroInterface.__name__)
         self._log.info("Initialising for %s" % interface_addr)
 
         self._addr = interface_addr
@@ -55,7 +55,7 @@ class HQwackInterface:
         print("Next game: %s" % next_game_time.isoformat())
         print("Next prize: %s" % next_prize)
 
-        self._send_info(HQwackInterface.WAITING, 
+        self._send_info(HQHeroInterface.WAITING, 
                         {"prize": next_prize, 
                          "nextGame": next_game_time.isoformat()})
     
@@ -66,7 +66,7 @@ class HQwackInterface:
         self._round_num = 0
         self._predicted_answer = None
 
-        self._send_info(HQwackInterface.STARTING)
+        self._send_info(HQHeroInterface.STARTING)
     
     def report_question(self, question, answers, question_num, num_questions):
         self._print_gap()
@@ -80,7 +80,7 @@ class HQwackInterface:
 
         self._round_num = question_num
 
-        self._send_info(HQwackInterface.NEWROUND, 
+        self._send_info(HQHeroInterface.NEWROUND, 
                         {"question": {"question": question, "choices": answers}, 
                          "numRounds": num_questions,
                          "num": question_num})
@@ -90,7 +90,7 @@ class HQwackInterface:
         for key in analysis:
             print(f"- {key}: {analysis[key]}")
         
-        self._send_info(HQwackInterface.ANALYSIS, {"analysis": analysis, "roundNum": question_num})
+        self._send_info(HQHeroInterface.ANALYSIS, {"analysis": analysis, "roundNum": question_num})
 
     def report_prediction(self, question_num, answer_predictions, speed, analysis):
         print()
@@ -104,7 +104,7 @@ class HQwackInterface:
         print()
         print(f"Speed: {speed}s")
 
-        self._send_info(HQwackInterface.PREDICTION, 
+        self._send_info(HQHeroInterface.PREDICTION, 
                         {"prediction": {"answers": answer_predictions, 
                                        "best": self._predicted_answer, 
                                        "speed": speed} , 
@@ -144,7 +144,7 @@ class HQwackInterface:
 
         print(f"Prediction score: {sum(self._correct_counts)}/{len(self._correct_counts)}")
 
-        self._send_info(HQwackInterface.ANSWERS, 
+        self._send_info(HQHeroInterface.ANSWERS, 
                         {"conclusion": {"answers": answer_counts, 
                                         "answer": correct_answer, 
                                         "eliminated": eliminated,

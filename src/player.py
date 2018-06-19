@@ -2,16 +2,16 @@ import asyncio
 import datetime
 import json
 import logging
-import re
 import operator
+import re
 import time
 
+import websockets
 from unidecode import unidecode
 
 import networking
 from analysis import QuestionAnalyser
-from reporting import HQwackInterface
-import websockets
+
 
 class HQTriviaPlayer:
     def __init__(self, socket_addr, headers, interface):
@@ -106,8 +106,3 @@ class HQTriviaPlayer:
                 self._log.warning("%s closed unexpectedly" % self._socket_addr)
             except ConnectionRefusedError as e:
                 self._log.error("Could not connect to %s: %s" % (self._socket_addr, e))
-
-if __name__ == "__main__":
-    logging.basicConfig(level="DEBUG")
-    player = HQTriviaPlayer("ws://localhost:8765", {"lel": "kek"}, HQwackInterface("lel"))
-    asyncio.get_event_loop().run_until_complete(player.play())
