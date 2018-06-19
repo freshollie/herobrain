@@ -29,6 +29,7 @@ class HQwackInterface:
         self._event_loop = asyncio.get_event_loop()
 
         self._analysis_correct_counts = [[],[],[]]
+        self._correct_counts = []
 
     async def __do_send(self, endpoint, info):
         url = self._addr + endpoint
@@ -84,19 +85,20 @@ class HQwackInterface:
                          "numRounds": num_questions,
                          "num": question_num})
     
-    def report_analysis(self, analysis, roundNum):
+    def report_analysis(self, analysis, question_num):
         print("### Analysis ###")
         for key in analysis:
             print(f"- {key}: {analysis[key]}")
         
-        self._send_info(HQwackInterface.ANALYSIS, {"analysis": analysis, "roundNum": roundNum})
+        self._send_info(HQwackInterface.ANALYSIS, {"analysis": analysis, "roundNum": question_num})
 
     def report_prediction(self, question_num, answer_predictions, speed, analysis):
-        speed = round(time.time() - self._question_time, 2)
         print()
         print("Prediction: ")
+
         self._predicted_answer = max(answer_predictions.items(), key=operator.itemgetter(1))[0]
         self._prediction_analysis = analysis
+
         for answer in answer_predictions:
             print(f" - {answer} - {round(answer_predictions[answer] * 100)}% {'<- Most probable' if answer == self._predicted_answer else ''}")
         print()
@@ -106,7 +108,7 @@ class HQwackInterface:
                         {"prediction": {"answers": answer_predictions, 
                                        "best": self._predicted_answer, 
                                        "speed": speed} , 
-                         "roundNum": roundNum})
+                         "roundNum": question_num})
     
     def report_round_end(self, answer_counts, correct_answer, eliminated, advancing):
         self._print_gap()
@@ -114,10 +116,18 @@ class HQwackInterface:
 
         for answer in answer_counts:
             print(f'- {answer}({answer_counts[answer]}){" <- Answer" if answer == correct_answer else ""}')
-        
+
+        # Analyse the accuracy of each method
         if self._prediction_analysis:
             for i in range(len(self._prediction_analysis)):
-                self._analysis_correct_counts[i] = max(self._prediction_analysis[i].items(), key=operator.itemgetter(1))[0]
+                analysis_answer = max(self._prediction_analysis[i].items(), key=operator.itemgetter(1))[0]
+                self._analysis_correct_counts[i].append(1 if analysis_answer == correct_answer else 0)
+
+        print()
+        print("Accuracy per method: ")
+
+        for i in range(len(self._analysis_correct_counts)):
+            print(f"Method {i} - {0 if not self._analysis_correct_counts[i] else round((sum(self._analysis_correct_counts[i]) / len(self._analysis_correct_counts[i])) * 100, 2)}% ({len(self._analysis_correct_counts[i])})")
         
         print()
         print(f"{eliminated} eliminated")
@@ -125,9 +135,14 @@ class HQwackInterface:
 
         if self._predicted_answer == correct_answer:
             self._score += 1
+            self._correct_counts.append(1)
             print("Predicted correctly!")
+        else:
+            self._correct_counts.append(0)
+        
+        print(f"Prediction rate: {round((sum(self._correct_counts) / len(self._correct_counts)) * 100, 2)}%")
 
-        print(f"Prediction score: {self._score}/{self._round_num}")
+        print(f"Prediction score: {sum(self._correct_counts)}/{len(self._correct_counts)}")
 
         self._send_info(HQwackInterface.ANSWERS, 
                         {"conclusion": {"answers": answer_counts, 

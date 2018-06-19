@@ -31,7 +31,6 @@ class QuestionAnalyser:
         self._key_nouns = {}
         self._extract_info()
 
-
     def _extract_info(self):
         '''
         Analyse the question, extracting the key
@@ -42,6 +41,7 @@ class QuestionAnalyser:
         ### Remove punctuation and other symbols from the answers ####
         self._parsed_answers = []
         for answer in self._original_answers:
+            # Remove the 's to replace with s as google will not care
             answer = answer.replace("'s ", "s ")
             self._parsed_answers.append(answer.translate(PUNCTUATION_TO_SPACE).lower())
             self._parsed_answers_to_answer[self._parsed_answers[-1]] = answer
@@ -51,8 +51,8 @@ class QuestionAnalyser:
         
         ### Work out if this queston is actually the opposite ####
         question_lower = self._question.lower()
-        self._is_opposite = "NOT" in self._question or\
-                          ("least" in question_lower and "at least" not in question_lower) or\
+        self._is_opposite = "NOT" in self._question or \
+                          ("least" in question_lower and "at least" not in question_lower) or \
                            "NEVER" in self._question
 
         #### Get all words in quotes ####
@@ -126,27 +126,26 @@ class QuestionAnalyser:
                                        self._parsed_answers, 
                                        self._is_opposite)
 
-        analysis = (analysis_1, analysis_2, analysis_3)
+        # Fix the keys for each method which we return as analysis for each method
+        methods = []
+        for analysis in (analysis_1, analysis_2, analysis_3):
+            methods.append({self._parsed_answers_to_answer[answer]: weighting for answer, weighting in analysis.items()})
+
         self._log.debug(analysis)
 
         self._log.info(f"Analysed {QuestionAnalyser.SEARCH_NUMBER * 2} pages, Reading {sum(map(len, texts_about_question)) + sum(map(len, texts_about_answers.values()))} words")
         
         # Combine the confidence fractions, giving 1 and 2 a higher confience than 3
-        combined_1 = {}
+        combined = {}
         for answer in analysis_1:
-            combined_1[answer] = analysis_1[answer] * 0.5 + analysis_2[answer] * 0.5
-        probs_1 = _generate_probabilities(combined_1, False)
-
-        combined_2 = {}
-        for answer in probs_1:
-            combined_2[self._parsed_answers_to_answer[answer]] = probs_1[answer] * 0.8 + analysis_3[answer] * 0.2
-        probs = _generate_probabilities(combined_2, False)
+            combined[self._parsed_answers_to_answer[answer]] = analysis_1[answer] * 0.7 + analysis_2[answer] * 0.7 + analysis_3[answer] * 0.4
+        probs = _generate_probabilities(combined, False)
 
         self._log.debug(f"Prediction: ")
         for answer in probs:
             self._log.debug(f" - {answer} - {round(probs[answer] * 100)}%")
 
-        return probs, analysis
+        return probs, methods
 
 
 def _generate_probabilities(counts, opposite):
@@ -155,6 +154,7 @@ def _generate_probabilities(counts, opposite):
             if counts[answer] > 0:
                 counts[answer] = 1 / counts[answer]
             else:
+                # When opposite, 0 answers are worth a lot
                 counts[answer] = 100000
 
     count_sum = sum(counts.values())
@@ -259,7 +259,7 @@ def _analysis_method3(answer_text_map, question_keywords, question_key_nouns, an
 
     for answer in keyword_scores:
         # Keywords are worth more than nouns
-        summed_scores[answer] = (keyword_scores[answer] * (2/3)) + (noun_scores[answer] * (1/3))
+        summed_scores[answer] = (keyword_scores[answer] * 3/4) + (noun_scores[answer] * 1/4)
     
     prediction = _generate_probabilities(summed_scores, reverse)
 

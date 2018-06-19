@@ -20,7 +20,7 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gec
            "Accept": "*/*",
            "Accept-Language": "en-US,en;q=0.5",
            "Accept-Encoding": "gzip, deflate"}
-GOOGLE_URL = "https://www.google.com/search?q={}&ie=utf-8&oe=utf-8&client=firefox-b-1-ab"
+GOOGLE_URL = "https://www.google.co.uk/search?q={}&ie=utf-8&oe=utf-8&client=firefox-b-1-ab"
 
 
 def find_keywords(words):
@@ -116,7 +116,7 @@ def clean_html(html):
     return unidecode(unescape(cleaned.strip()))
 
 
-async def get_clean_texts(urls, timeout=1.5, headers=HEADERS):
+async def get_clean_texts(urls, timeout=3, headers=HEADERS):
     responses = await networking.get_responses(urls, timeout, headers)
 
     return [clean_html(r).lower() for r in responses]
