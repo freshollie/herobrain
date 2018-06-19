@@ -138,7 +138,7 @@ class QuestionAnalyser:
         # Combine the confidence fractions, giving 1 and 2 a higher confience than 3
         combined = {}
         for answer in analysis_1:
-            combined[self._parsed_answers_to_answer[answer]] = analysis_1[answer] * 0.7 + analysis_2[answer] * 0.7 + analysis_3[answer] * 0.4
+            combined[self._parsed_answers_to_answer[answer]] = analysis_1[answer] * 0.75 + analysis_2[answer] * 0.75 + analysis_3[answer] * 0.4
         probs = _generate_probabilities(combined, False)
 
         self._log.debug(f"Prediction: ")
