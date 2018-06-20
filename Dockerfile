@@ -9,4 +9,4 @@ RUN pipenv install --deploy --system --ignore-pipfile && \
 
 COPY src src
 
-ENTRYPOINT ["python3.6", "/hqhero-reporter/src/run.py"]
+ENTRYPOINT ["python3.6", "-u", "/hqhero-reporter/src/run.py"]

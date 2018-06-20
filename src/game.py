@@ -5,6 +5,7 @@ import logging
 import operator
 import re
 import time
+import socket
 
 import websockets
 from unidecode import unidecode
@@ -68,6 +69,7 @@ class GameHandler:
             eliminated = message['eliminatedPlayersCount']
 
             await self._on_round_complete(answer_counts, correct, eliminated, advancing)
+
         elif message["type"] == "interaction":
             pass
 
@@ -106,5 +108,5 @@ class GameHandler:
 
         except (websockets.ConnectionClosed, ConnectionResetError):
             self._log.warning("%s closed unexpectedly" % self._socket_addr)
-        except ConnectionRefusedError as e:
+        except (ConnectionRefusedError, socket.gaierror) as e:
             self._log.error("Could not connect to %s: %s" % (self._socket_addr, e))
