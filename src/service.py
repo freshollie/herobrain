@@ -56,9 +56,12 @@ class HQHeroReporter:
 
                     # The game is a while away, so don't poll. Wait an hour and
                     # check again, or wake up close to game time
+                    time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
+                    self._log.debug(f"{round(time_till_show)} seconds till next show")
+                    self._log.debug("Sleeping")
+
                     while True:
                         time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
-                        self._log.debug(f"{round(time_till_show)} seconds till next show")
                         self._interface.report_waiting(next_time, prize)
 
                         if (time_till_show < 100 or time_slept > (3600 / 5)):
