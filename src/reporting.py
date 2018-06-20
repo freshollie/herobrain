@@ -55,12 +55,16 @@ class HQHeroInterface:
     def _print_gap(self):
         self._print("========")
     
-    def report_waiting(self, next_game_time, next_prize):
+    def report_waiting(self, next_game_time=None, next_prize=None):
         self._print_gap()
-        self._print("Waiting for next game")
-        self._print("Next game: %s" % next_game_time.isoformat())
-        self._print("Next prize: %s" % next_prize)
 
+        if next_game_time:
+            self._print("Waiting for next game")
+            self._print("Next game: %s" % next_game_time.isoformat())
+            self._print("Next prize: %s" % next_prize)
+        else:
+            self._print("Next game not scheduled")
+            
         self._send_info(HQHeroInterface.WAITING, 
                         {"prize": next_prize, 
                          "nextGame": next_game_time.isoformat()})

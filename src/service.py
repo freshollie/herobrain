@@ -45,23 +45,32 @@ class HQHeroReporter:
                 if "error" in response_data and response_data["error"] == "Auth not valid":
                     raise RuntimeError("Invalid auth token")
                 else:
-                    #next_time = datetime.strptime("2018-06-20T00:55:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
-                    next_time = datetime.strptime(response_data["nextShowTime"], "%Y-%m-%dT%H:%M:%S.000Z")
-                    next_time = next_time.replace(tzinfo=timezone.utc)
-                    prize = response_data["nextShowPrize"]
+                    # No show scheduled
+                    if not response_data["nextShowTime"]:
+                        next_time = None
+                        prize = None
+                        self._log.info("No show scheduled")
+                    else:
+                        #next_time = datetime.strptime("2018-06-20T00:55:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
+                        next_time = datetime.strptime(response_data["nextShowTime"], "%Y-%m-%dT%H:%M:%S.000Z")
+                        next_time = next_time.replace(tzinfo=timezone.utc)
+                        prize = response_data["nextShowPrize"]
 
-                    self._log.info(f"Next show at {next_time.isoformat()}")
+                        self._log.info(f"Next show at {next_time.isoformat()}")
+
+                        # The game is a while away, so don't poll. Wait an hour and
+                        # check again, or wake up close to game time
+                        time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
+                        self._log.debug(f"{round(time_till_show)} seconds till next show")
 
                     time_slept = 0
-
-                    # The game is a while away, so don't poll. Wait an hour and
-                    # check again, or wake up close to game time
-                    time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
-                    self._log.debug(f"{round(time_till_show)} seconds till next show")
                     self._log.debug("Sleeping")
 
                     while True:
-                        time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
+                        if next_time == :
+                            time_till_show = 101
+                        else:
+                            time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
                         self._interface.report_waiting(next_time, prize)
 
                         if (time_till_show < 100 or time_slept > (3600 / 5)):
@@ -69,8 +78,6 @@ class HQHeroReporter:
 
                         await asyncio.sleep(5)
                         time_slept += 1
-                        
-
             else:
                 game_socket_addr = response_data["broadcast"]["socketUrl"].replace("https", "wss")
                 self._log.info("Got a game socket %s" % game_socket_addr)

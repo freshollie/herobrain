@@ -10,6 +10,7 @@ nltk = "*"
 aiodns = "*"
 Unidecode = "*"
 websockets = "*"
+cchardet = "*"
 
 [dev-packages]
 pylint = "*"
@@ -21,4 +22,3 @@ python_version = "3.6"
 
 [scripts]
 nltk-install="python3.6 -m nltk.downloader 'punkt' 'averaged_perceptron_tagger' 'stopwords'"
-
