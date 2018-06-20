@@ -14,6 +14,8 @@ from analysis import QuestionAnalyser
 
 
 class GameHandler:
+    MORE_LOGS = False
+
     def __init__(self, socket_addr, headers, interface):
         self._log = logging.getLogger(GameHandler.__name__)
         self._log.info("Initialising on %s" % socket_addr)
@@ -41,8 +43,6 @@ class GameHandler:
         self._interface.report_round_end(answer_counts, correct_answer, eliminated, advancing)
 
     async def _handle_event(self, message):
-        self._log.debug(message)
-        
         # New question
         if message["type"] == "question":
             # decode the question
@@ -78,14 +78,14 @@ class GameHandler:
         self._log.debug("Starting game connection")
         async with websockets.connect(self._socket_addr, extra_headers=self._socket_headers) as socket:
             async for msg in socket:
-                self._log.debug("Recieved a message")
-
                 # We received a new message
                 # so parse it and hopefully get a JSON
                 message = msg
                 message = re.sub(r"[\x00-\x1f\x7f-\x9f]", "", message)
                 message_data = json.loads(message)
-                self._log.debug(str(message_data).encode("utf-8"))
+
+                if GameHandler.MORE_LOGS:
+                    self._log.debug(str(message_data).encode("utf-8"))
 
                 # Ah. Not good
                 if "error" in message_data and message_data["error"] == "Auth not valid":

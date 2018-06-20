@@ -75,7 +75,7 @@ def get_google_links(page, num_results):
         if url is not None:
             links.append(url["href"])
     links = list(dict.fromkeys(links))  # Remove duplicates while preserving order
-
+    log.debug(links)
     return links[:num_results]
 
 

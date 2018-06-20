@@ -29,6 +29,8 @@ class QuestionAnalyser:
         self._key_nouns = {}
         self._extract_info()
 
+        self._log.info(self.get_analysis())
+
     def _extract_info(self):
         '''
         Analyse the question, extracting the key
@@ -128,7 +130,7 @@ class QuestionAnalyser:
         for analysis in (analysis_1, analysis_2, analysis_3):
             methods.append({self._parsed_answers_to_answer[answer]: weighting for answer, weighting in analysis.items()})
 
-        self._log.debug(analysis)
+        self._log.debug(methods)
 
         self._log.info(f"Analysed {QuestionAnalyser.SEARCH_NUMBER * 2} pages, Reading {sum(map(len, texts_about_question)) + sum(map(len, texts_about_answers.values()))} words")
         
@@ -263,4 +265,7 @@ def _analysis_method3(answer_text_map, question_keywords, question_key_nouns, an
     return prediction
 
 if __name__ == "__main__":
-    print(_generate_probabilities({"harry": 10, "sirus": 3, "neville": 20}, True))
+    logging.basicConfig(level="DEBUG")
+    async def test():
+        print(await QuestionAnalyser("“Rocky” is the nickname of the real-life inspiration behind which of the following?", ["Popeye", "Hulk", "He-Man"]).find_answers())
+    asyncio.get_event_loop().run_until_complete(test())
