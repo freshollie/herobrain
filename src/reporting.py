@@ -7,13 +7,6 @@ import datetime
 
 QUIET = True
 
-def ignored(x=None):
-    pass
-
-if QUIET:
-    print = ignored
-
-
 class HQHeroInterface:
     WAITING = "/hero/waiting"
     STARTING = "/hero/starting"
@@ -55,14 +48,18 @@ class HQHeroInterface:
     def _send_info(self, endpoint, info={}):
         asyncio.ensure_future(self.__do_send(endpoint, info))
 
+    def _print(self, s=None):
+        if not QUIET:
+            print(s)
+
     def _print_gap(self):
-        print("========")
+        self._print("========")
     
     def report_waiting(self, next_game_time, next_prize):
         self._print_gap()
-        print("Waiting for next game")
-        print("Next game: %s" % next_game_time.isoformat())
-        print("Next prize: %s" % next_prize)
+        self._print("Waiting for next game")
+        self._print("Next game: %s" % next_game_time.isoformat())
+        self._print("Next prize: %s" % next_prize)
 
         self._send_info(HQHeroInterface.WAITING, 
                         {"prize": next_prize, 
@@ -70,7 +67,7 @@ class HQHeroInterface:
     
     def report_starting(self):
         self._print_gap()
-        print("Game starting!")
+        self._print("Game starting!")
         self._score = 0
         self._round_num = 0
         self._predicted_answer = None
@@ -79,13 +76,13 @@ class HQHeroInterface:
     
     def report_question(self, question, answers, question_num, num_questions):
         self._print_gap()
-        print("Question %s/%s" % (question_num, num_questions))
-        print()
-        print(question)
-        print()
+        self._print("Question %s/%s" % (question_num, num_questions))
+        self._print()
+        self._print(question)
+        self._print()
         for answer in answers:
-            print("- %s" % answer)
-        print()
+            self._print("- %s" % answer)
+        self._print()
 
         self._round_num = question_num
 
@@ -95,23 +92,23 @@ class HQHeroInterface:
                          "num": question_num})
     
     def report_analysis(self, analysis, question_num):
-        print("### Analysis ###")
+        self._print("### Analysis ###")
         for key in analysis:
-            print(f"- {key}: {analysis[key]}")
+            self._print(f"- {key}: {analysis[key]}")
         
         self._send_info(HQHeroInterface.ANALYSIS, {"analysis": analysis, "roundNum": question_num})
 
     def report_prediction(self, question_num, answer_predictions, speed, analysis):
-        print()
-        print("Prediction: ")
+        self._print()
+        self._print("Prediction: ")
 
         self._predicted_answer = max(answer_predictions.items(), key=operator.itemgetter(1))[0]
         self._prediction_analysis = analysis
 
         for answer in answer_predictions:
-            print(f" - {answer} - {round(answer_predictions[answer] * 100)}% {'<- Most probable' if answer == self._predicted_answer else ''}")
-        print()
-        print(f"Speed: {speed}s")
+            self._print(f" - {answer} - {round(answer_predictions[answer] * 100)}% {'<- Most probable' if answer == self._predicted_answer else ''}")
+        self._print()
+        self._print(f"Speed: {speed}s")
 
         self._send_info(HQHeroInterface.PREDICTION, 
                         {"prediction": {"answers": answer_predictions, 
@@ -122,10 +119,10 @@ class HQHeroInterface:
     
     def report_round_end(self, answer_counts, correct_answer, eliminated, advancing):
         self._print_gap()
-        print("Round over!")
+        self._print("Round over!")
 
         for answer in answer_counts:
-            print(f'- {answer}({answer_counts[answer]}){" <- Answer" if answer == correct_answer else ""}')
+            self._print(f'- {answer}({answer_counts[answer]}){" <- Answer" if answer == correct_answer else ""}')
 
         # Analyse the accuracy of each method
         if self._prediction_analysis:
@@ -133,26 +130,26 @@ class HQHeroInterface:
                 analysis_answer = max(self._prediction_analysis[i].items(), key=operator.itemgetter(1))[0]
                 self._analysis_correct_counts[i].append(1 if analysis_answer == correct_answer else 0)
 
-        print()
-        print("Accuracy per method: ")
+        self._print()
+        self._print("Accuracy per method: ")
 
         for i in range(len(self._analysis_correct_counts)):
-            print(f"Method {i} - {0 if not self._analysis_correct_counts[i] else round((sum(self._analysis_correct_counts[i]) / len(self._analysis_correct_counts[i])) * 100, 2)}% ({len(self._analysis_correct_counts[i])})")
+            self._print(f"Method {i} - {0 if not self._analysis_correct_counts[i] else round((sum(self._analysis_correct_counts[i]) / len(self._analysis_correct_counts[i])) * 100, 2)}% ({len(self._analysis_correct_counts[i])})")
         
-        print()
-        print(f"{eliminated} eliminated")
-        print(f"{advancing} advancing")
+        self._print()
+        self._print(f"{eliminated} eliminated")
+        self._print(f"{advancing} advancing")
 
         if self._predicted_answer == correct_answer:
             self._score += 1
             self._correct_counts.append(1)
-            print("Predicted correctly!")
+            self._print("Predicted correctly!")
         else:
             self._correct_counts.append(0)
         
-        print(f"Prediction rate: {round((sum(self._correct_counts) / len(self._correct_counts)) * 100, 2)}%")
+        self._print(f"Prediction rate: {round((sum(self._correct_counts) / len(self._correct_counts)) * 100, 2)}%")
 
-        print(f"Prediction score: {sum(self._correct_counts)}/{len(self._correct_counts)}")
+        self._print(f"Prediction score: {sum(self._correct_counts)}/{len(self._correct_counts)}")
 
         self._send_info(HQHeroInterface.ANSWERS, 
                         {"conclusion": {"answers": answer_counts, 
@@ -162,4 +159,4 @@ class HQHeroInterface:
 
     def report_finished(self):
         self._print_gap()
-        print("Game has finished")
+        self._print("Game has finished")
