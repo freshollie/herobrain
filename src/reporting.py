@@ -5,7 +5,7 @@ import operator
 import time
 import datetime
 
-QUIET = True
+QUIET = False
 
 class HQHeroInterface:
     WAITING = "/hero/waiting"
