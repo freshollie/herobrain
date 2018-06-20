@@ -1,12 +1,13 @@
 import asyncio
+import datetime
 import logging
-import os
-import time
-from aiohttp.client_exceptions import ContentTypeError
 from datetime import datetime, timezone
-from reporting import HQHeroInterface
+
 import networking
+from aiohttp.client_exceptions import ContentTypeError
 from game import GameHandler
+from reporting import HQHeroInterface
+
 
 class HQHeroReporter: 
     GAME_INFO_URL = "https://api-quiz.hype.space/shows/now?type="
@@ -34,7 +35,7 @@ class HQHeroReporter:
                     response_data={"broadcast": {"socketUrl": self._test_socket}}
                 else:
                     response_data = await networking.get_json_response(HQHeroReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
-            except (ContentTypeError, TimeoutError):
+            except (ContentTypeError, asyncio.TimeoutError):
                 self._log.error("_find_game: Could not get game info from server, retrying...")
                 await asyncio.sleep(5)
                 continue
@@ -45,17 +46,33 @@ class HQHeroReporter:
                 if "error" in response_data and response_data["error"] == "Auth not valid":
                     raise RuntimeError("Invalid auth token")
                 else:
+                    #next_time = datetime.strptime("2018-06-20T00:55:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
                     next_time = datetime.strptime(response_data["nextShowTime"], "%Y-%m-%dT%H:%M:%S.000Z")
                     next_time = next_time.replace(tzinfo=timezone.utc)
                     prize = response_data["nextShowPrize"]
 
-                    self._interface.report_waiting(next_time, prize)
+                    self._log.info(f"Next show at {next_time.isoformat()}")
+
+                    time_slept = 0
+
+                    # The game is a while away, so don't poll. Wait an hour and
+                    # check again, or wake up close to game time
+                    while True:
+                        time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
+                        print(time_till_show)
+                        self._interface.report_waiting(next_time, prize)
+
+                        if (time_till_show < 100 or time_slept > 3600):
+                            break
+
+                        await asyncio.sleep(5)
+                        time_slept += 1
+                        
+
             else:
                 game_socket_addr = response_data["broadcast"]["socketUrl"].replace("https", "wss")
                 self._log.info("Got a game socket %s" % game_socket_addr)
                 return game_socket_addr
-            
-            await asyncio.sleep(5)
     
     async def _main_loop(self):
         while True:

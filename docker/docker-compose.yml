@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  hqhero-reporter-uk:
+    image: "hqhero.com:5000/hqhero-reporter:master"
+    networks:
+      - hqhero-net
+    entrypoint:
+      - python3.6
+      - /hqhero-reporter/src/run.py
+      - --token 
+      - TOKEN
+      - --hqhero 
+      - http://hqhero-uk:1029/
+      - --log-level 
+      - debug

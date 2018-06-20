@@ -5,6 +5,15 @@ import operator
 import time
 import datetime
 
+QUIET = True
+
+def ignored(x=None):
+    pass
+
+if QUIET:
+    print = ignored
+
+
 class HQHeroInterface:
     WAITING = "/hero/waiting"
     STARTING = "/hero/starting"

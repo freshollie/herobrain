@@ -4,10 +4,7 @@ import logging
 import re
 
 import aiohttp
-from colorama import Fore, Style
-from lomond import WebSocket
 from unidecode import unidecode
-import websockets
 
 log = logging.getLogger(__name__)
 

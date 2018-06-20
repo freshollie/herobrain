@@ -5,8 +5,6 @@ import asyncio
 import logging
 from collections import defaultdict
 
-from colorama import Fore, Style
-
 import search
 
 log = logging.getLogger(__name__)
@@ -42,8 +40,7 @@ class QuestionAnalyser:
         self._parsed_answers = []
         for answer in self._original_answers:
             # Remove the 's to replace with s as google will not care
-            answer = answer.replace("'s ", "s ")
-            self._parsed_answers.append(answer.translate(PUNCTUATION_TO_SPACE).lower())
+            self._parsed_answers.append(answer.replace("'s ", "s ").translate(PUNCTUATION_TO_SPACE).lower())
             self._parsed_answers_to_answer[self._parsed_answers[-1]] = answer
         # Remove dupilcates
         self._parsed_answers = list(dict.fromkeys(self._parsed_answers))
