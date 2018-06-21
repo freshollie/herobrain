@@ -66,8 +66,8 @@ class HQHeroInterface:
             self._print("Next game not scheduled")
             
         self._send_info(HQHeroInterface.WAITING, 
-                        {"prize": next_prize, 
-                         "nextGame": next_game_time.isoformat()})
+                        {"prize": None, 
+                         "nextGame": None})
     
     def report_starting(self):
         self._print_gap()
