@@ -67,7 +67,7 @@ class HQHeroReporter:
                     self._log.debug("Sleeping")
 
                     while True:
-                        if next_time == :
+                        if next_time == None:
                             time_till_show = 101
                         else:
                             time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
