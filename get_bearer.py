@@ -15,7 +15,7 @@ async def main():
 
     if "error" in resp:
         sys.exit(resp["error"])
-
+    print(resp)
     verification_id = resp["verificationId"]
 
     code = input("Code?: ")
@@ -24,6 +24,7 @@ async def main():
 
     if "error" in resp:
         sys.exit(resp["error"])
+    print(resp)
 
     print(resp["auth"]["authToken"])
 
