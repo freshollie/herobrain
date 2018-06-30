@@ -11,14 +11,18 @@ aiodns = "*"
 Unidecode = "*"
 websockets = "*"
 cchardet = "*"
+textblob = "*"
+textblob-de = "*"
 
 [dev-packages]
 pylint = "*"
 rope = "*"
 mypy = "*"
+aiounittest = "*"
 
 [requires]
 python_version = "3.6"
 
 [scripts]
 nltk-install="python3.6 -m nltk.downloader 'punkt' 'averaged_perceptron_tagger' 'stopwords'"
+textblob-install="python3.6 -m textblob.download_corpora"
