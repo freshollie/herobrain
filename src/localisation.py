@@ -28,7 +28,8 @@ def is_opposite_german(question):
     question_lower = question.lower()
     return "NICHT" in question or \
             ("am wenigsten" in question_lower and "mindestens" not in question_lower) or \
-            "NIE" in question or "NIEMALS" in question
+            "NIE" in question or "NIEMALS" in question or \
+            "KEINE" in question
 
 
 def is_opposite_english(question):
