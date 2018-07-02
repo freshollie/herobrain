@@ -64,7 +64,7 @@ class HQHeroReporter:
                         time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
                         self._log.debug(f"{round(time_till_show)} seconds till next show")
 
-                await asyncio.sleep(random.randint(30, 45))
+                await asyncio.sleep(random.randint(60, 120))
                 """     self._log.debug("Sleeping")
 
                     while True:
