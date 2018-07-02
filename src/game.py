@@ -3,7 +3,6 @@ import datetime
 import json
 import logging
 import operator
-import re
 import time
 import socket
 
@@ -75,19 +74,28 @@ class GameHandler:
 
     def _is_ending_message(self, message):
         return message["type"] == "broadcastEnded" and "reason" not in message
+    
+    async def _keep_open(self, socket):
+        self._log.debug("Keeping socket open, pinging every 5 seconds")
+        while True:
+            try:
+                await socket.ping()
+            except (websockets.ConnectionClosed, KeyboardInterrupt):
+                break
+            await asyncio.sleep(5)
+        self._log.debug("Ping loop ended")
 
     async def _game_connection(self):
         self._log.debug("Starting game connection")
         async with websockets.connect(self._socket_addr, extra_headers=self._socket_headers) as socket:
+            asyncio.ensure_future(self._keep_open(socket))
             async for msg in socket:
                 # We received a new message
                 # so parse it and hopefully get a JSON
-                message = msg
-                message = re.sub(r"[\x00-\x1f\x7f-\x9f]", "", message)
-                message_data = json.loads(message)
+                message_data = json.loads(msg)
 
                 if GameHandler.MORE_LOGS:
-                    self._log.debug(str(message_data).encode("utf-8"))
+                    self._log.debug(str(message_data))
 
                 # Ah. Not good
                 if "error" in message_data and message_data["error"] == "Auth not valid":
@@ -104,7 +112,9 @@ class GameHandler:
                 async for message in self._game_connection():
                     if self._is_ending_message(message):
                         return
-                    asyncio.ensure_future(self._handle_event(message), loop=self._event_loop)
+                    # Don't stop receiving messages while we wait for the question to be answered
+                    # perform the analysis in another coroutine
+                    asyncio.ensure_future(self._handle_event(message))
 
         except (websockets.ConnectionClosed, ConnectionResetError):
             self._log.warning("%s closed unexpectedly" % self._socket_addr)
