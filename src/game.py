@@ -4,6 +4,7 @@ import json
 import logging
 import operator
 import time
+import re
 import socket
 
 import websockets
@@ -89,10 +90,10 @@ class GameHandler:
         self._log.debug("Starting game connection")
         async with websockets.connect(self._socket_addr, extra_headers=self._socket_headers) as socket:
             asyncio.ensure_future(self._keep_open(socket))
+
             async for msg in socket:
-                # We received a new message
-                # so parse it and hopefully get a JSON
-                message_data = json.loads(msg)
+                # We received a new message, remove any weird characters and
+                message_data = json.loads(re.sub(r"[\x00-\x1f\x7f-\x9f]", "", msg))
 
                 if GameHandler.MORE_LOGS:
                     self._log.debug(str(message_data))
