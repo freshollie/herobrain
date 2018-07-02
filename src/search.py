@@ -46,7 +46,7 @@ async def search_google(question, num_results):
 
 async def multiple_search(questions, num_results):
     queries = list(map(localisation.GOOGLE_URL.format, questions))
-    pages = await networking.get_responses(queries, timeout=5, headers=HEADERS)
+    pages = await networking.get_responses(queries, timeout=3, headers=HEADERS)
     link_list = [get_google_links(page, num_results) for page in pages]
     return link_list
 
