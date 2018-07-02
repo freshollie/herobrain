@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 from datetime import datetime, timezone
 
 import networking
@@ -63,8 +64,8 @@ class HQHeroReporter:
                         time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
                         self._log.debug(f"{round(time_till_show)} seconds till next show")
 
-                    time_slept = 0
-                    self._log.debug("Sleeping")
+                await asyncio.sleep(random.randint(60, 120))
+                """     self._log.debug("Sleeping")
 
                     while True:
                         if next_time == None:
@@ -76,8 +77,8 @@ class HQHeroReporter:
                         if (time_till_show < 100 or time_slept > (3600 / 5)):
                             break
 
-                        await asyncio.sleep(5)
-                        time_slept += 1
+                        
+                        time_slept += 1 """
             else:
                 game_socket_addr = response_data["broadcast"]["socketUrl"].replace("https", "wss")
                 self._log.info("Got a game socket %s" % game_socket_addr)
