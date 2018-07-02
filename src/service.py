@@ -63,7 +63,8 @@ class HQHeroReporter:
                         # check again, or wake up close to game time
                         time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
                         self._log.debug(f"{round(time_till_show)} seconds till next show")
-
+                        
+                self._interface.report_waiting(next_time, prize)
                 await asyncio.sleep(random.randint(60, 120))
                 """     self._log.debug("Sleeping")
 
@@ -72,7 +73,7 @@ class HQHeroReporter:
                             time_till_show = 101
                         else:
                             time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
-                        self._interface.report_waiting(next_time, prize)
+                        
 
                         if (time_till_show < 100 or time_slept > (3600 / 5)):
                             break
