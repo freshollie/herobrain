@@ -112,6 +112,7 @@ class GameHandler:
                 # we get a connection closed error
                 async for message in self._game_connection():
                     if self._is_ending_message(message):
+                        self._log.info(f"Game ending: {message}")
                         return
                     # Don't stop receiving messages while we wait for the question to be answered
                     # perform the analysis in another coroutine

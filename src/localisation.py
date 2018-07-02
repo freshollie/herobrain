@@ -26,10 +26,18 @@ TEXT_BLOBS = {"en-uk": TextBlob,
 
 def is_opposite_german(question):
     question_lower = question.lower()
-    return "NICHT" in question or \
-            ("am wenigsten" in question_lower and "mindestens" not in question_lower) or \
-            "NIE" in question or "NIEMALS" in question or \
-            "KEINE" in question
+    opposite = "NICHT" in question \
+                or ("am wenigsten" in question_lower 
+                    and "mindestens" not in question_lower) \
+                or "NIE" in question \
+                or "NIEMALS" in question
+    
+    if not opposite:
+        for word in question.split():
+            if word.startswith("KEIN"):
+                return True
+    
+    return opposite
 
 
 def is_opposite_english(question):
