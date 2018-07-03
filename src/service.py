@@ -52,7 +52,6 @@ class HQHeroReporter:
                         prize = None
                         self._log.info("No show scheduled")
                     else:
-                        #next_time = datetime.strptime("2018-06-20T00:55:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
                         next_time = datetime.strptime(response_data["nextShowTime"], "%Y-%m-%dT%H:%M:%S.000Z")
                         next_time = next_time.replace(tzinfo=timezone.utc)
                         prize = response_data["nextShowPrize"]
@@ -63,23 +62,15 @@ class HQHeroReporter:
                         # check again, or wake up close to game time
                         time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
                         self._log.debug(f"{round(time_till_show)} seconds till next show")
-                        
-                self._interface.report_waiting(next_time, prize)
-                await asyncio.sleep(random.randint(60, 120))
-                """     self._log.debug("Sleeping")
 
-                    while True:
-                        if next_time == None:
-                            time_till_show = 101
-                        else:
-                            time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
-                        
+                sleep_time = random.randint(60, 120)
+                self._log.debug("Sleeping")
 
-                        if (time_till_show < 100 or time_slept > (3600 / 5)):
-                            break
+                while sleep_time > 0:
+                    self._interface.report_waiting(next_time, prize)
+                    sleep_time -= 5
+                    await asyncio.sleep(5)
 
-                        
-                        time_slept += 1 """
             else:
                 game_socket_addr = response_data["broadcast"]["socketUrl"].replace("https", "wss")
                 self._log.info("Got a game socket %s" % game_socket_addr)
