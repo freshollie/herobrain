@@ -51,7 +51,6 @@ class HQHeroReporter:
                         prize = None
                         self._log.info("No show scheduled")
                     else:
-                        #next_time = datetime.strptime("2018-06-20T00:55:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
                         next_time = datetime.strptime(response_data["nextShowTime"], "%Y-%m-%dT%H:%M:%S.000Z")
                         next_time = next_time.replace(tzinfo=timezone.utc)
                         prize = response_data["nextShowPrize"]
@@ -66,7 +65,20 @@ class HQHeroReporter:
                 self._interface.report_waiting(next_time, prize)
                 
                 if not self._test_server:
-                    await asyncio.sleep(random.randint(60, 120))
+                    time_till_show = 0
+                    if next_time:
+                        time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
+                    
+                    if time_till_show > 60:
+                        sleep_time = random.randint(60, 120)
+                        self._log.debug("Sleeping")
+
+                        while sleep_time > 0:
+                            self._interface.report_waiting(next_time, prize)
+                            sleep_time -= 5
+                            await asyncio.sleep(5)
+                    else:
+                        await asyncio.sleep(2)
                 else:
                     await asyncio.sleep(1)
             else:
