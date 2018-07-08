@@ -4,7 +4,7 @@ import random
 from datetime import datetime, timezone
 
 import networking
-from aiohttp.client_exceptions import ContentTypeError
+from aiohttp.client_exceptions import ContentTypeError, ClientConnectorError
 from game import GameHandler
 from reporting import HQHeroInterface
 
@@ -12,13 +12,13 @@ from reporting import HQHeroInterface
 class HQHeroReporter: 
     GAME_INFO_URL = "https://api-quiz.hype.space/shows/now?type="
 
-    def __init__(self, token, interface_addr, test_socket=None):
+    def __init__(self, token, interface_addr, test_server=None):
         self._log = logging.getLogger(HQHeroReporter.__name__)
         self._log.info("Initialising")
 
         self._interface = HQHeroInterface(interface_addr)
 
-        self._test_socket = test_socket
+        self._test_server = test_server
 
         self._token = token
         self._headers = {"Authorization": f"Bearer {token}",
@@ -29,14 +29,13 @@ class HQHeroReporter:
     async def _find_game(self):
         while True:
             try:
-                if self._test_socket:
+                if self._test_server:
                     # Simulate finding docket if it is a test socket
-                    await asyncio.sleep(1)
-                    response_data={"broadcast": {"socketUrl": self._test_socket}}
+                    response_data = await networking.get_json_response(self._test_server, timeout=1.5, headers=self._headers)
                 else:
                     response_data = await networking.get_json_response(HQHeroReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
-            except (ContentTypeError, asyncio.TimeoutError):
-                self._log.error("_find_game: Could not get game info from server, retrying...")
+            except (ContentTypeError, asyncio.TimeoutError, ClientConnectorError) as e:
+                self._log.error(f"_find_game: Could not get game info from server ({e}), retrying...")
                 await asyncio.sleep(5)
                 continue
 
@@ -63,23 +62,13 @@ class HQHeroReporter:
                         # check again, or wake up close to game time
                         time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
                         self._log.debug(f"{round(time_till_show)} seconds till next show")
-                        
+
                 self._interface.report_waiting(next_time, prize)
-                await asyncio.sleep(random.randint(60, 120))
-                """     self._log.debug("Sleeping")
-
-                    while True:
-                        if next_time == None:
-                            time_till_show = 101
-                        else:
-                            time_till_show = (next_time - datetime.utcnow().replace(tzinfo=timezone.utc)).total_seconds()
-                        
-
-                        if (time_till_show < 100 or time_slept > (3600 / 5)):
-                            break
-
-                        
-                        time_slept += 1 """
+                
+                if not self._test_server:
+                    await asyncio.sleep(random.randint(60, 120))
+                else:
+                    await asyncio.sleep(1)
             else:
                 game_socket_addr = response_data["broadcast"]["socketUrl"].replace("https", "wss")
                 self._log.info("Got a game socket %s" % game_socket_addr)
@@ -94,6 +83,8 @@ class HQHeroReporter:
             # Play this game
             game = GameHandler(game_socket_addr, self._headers, self._interface)
             await game.play()
+
+            await asyncio.sleep(5)
     
     def run(self):
         self._event_loop.run_until_complete(self._main_loop())
