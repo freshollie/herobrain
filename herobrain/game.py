@@ -10,8 +10,8 @@ import socket
 import websockets
 from unidecode import unidecode
 
-import networking
-from analysis import QuestionAnalyser
+from herobrain import networking
+from herobrain.analysis import QuestionAnalyser
 
 
 class GameHandler:

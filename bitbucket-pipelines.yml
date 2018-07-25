@@ -7,7 +7,7 @@ pipelines:
           services:
             - docker
           script:
-            - export IMAGE_NAME=$DOCKER_REPO/hqhero-reporter:master
+            - export IMAGE_NAME=$DOCKER_REPO/herobrain:master
             # authenticate with the our docker registry
             - docker login $DOCKER_REPO --username $DOCKER_REPO_USERNAME --password $DOCKER_REPO_PASSWORD
             # Use the old image on the server to help with build
@@ -28,7 +28,7 @@ pipelines:
           services:
             - docker
           script:
-            - export IMAGE_NAME=$DOCKER_REPO/hqhero-reporter:dev
+            - export IMAGE_NAME=$DOCKER_REPO/herobrain:dev
             # authenticate with the our docker registry
             - docker login $DOCKER_REPO --username $DOCKER_REPO_USERNAME --password $DOCKER_REPO_PASSWORD
             # Use the old image on the server to help with build

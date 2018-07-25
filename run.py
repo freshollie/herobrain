@@ -1,12 +1,12 @@
 import logging
 import argparse
-from service import HQHeroReporter
-import localisation
+from herobrain import Herobrain
+from herobrain import localisation
 import sys
 
 
 # Get the token as input
-parser = argparse.ArgumentParser(description="hqwack-reporter")
+parser = argparse.ArgumentParser(description="herobrain")
 parser.add_argument("-t", "--token", dest="token", default="")
 parser.add_argument("-s", "--server", dest="interface", default="http://localhost:1029")
 parser.add_argument("-l", "--locale", dest="locale", default=localisation.ENGLISH_UK)
@@ -26,5 +26,5 @@ localisation.set_as(args.locale)
 logging.basicConfig(level=args.log_level.upper())
 logging.getLogger('websockets').setLevel(logging.ERROR)
 
-service = HQHeroReporter(args.token, args.interface, args.test_server if args.test else None)
+service = Herobrain(args.token, args.interface, args.test_server if args.test else None)
 service.run()

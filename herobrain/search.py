@@ -5,8 +5,8 @@ from html import unescape
 from bs4 import BeautifulSoup
 from unidecode import unidecode
 
-import networking
-import localisation
+from herobrain import networking
+from herobrain import localisation
 
 log = logging.getLogger(__name__)
 

@@ -3,17 +3,17 @@ import logging
 import random
 from datetime import datetime, timezone
 
-import networking
+from herobrain import networking
 from aiohttp.client_exceptions import ContentTypeError, ClientConnectorError
-from game import GameHandler
-from reporting import HQHeroInterface
+from herobrain.game import GameHandler
+from herobrain.output import HQHeroInterface
 
 
-class HQHeroReporter: 
+class Herobrain: 
     GAME_INFO_URL = "https://api-quiz.hype.space/shows/now?type="
 
     def __init__(self, token, interface_addr, test_server=None):
-        self._log = logging.getLogger(HQHeroReporter.__name__)
+        self._log = logging.getLogger(Herobrain.__name__)
         self._log.info("Initialising")
 
         self._interface = HQHeroInterface(interface_addr)
@@ -33,7 +33,7 @@ class HQHeroReporter:
                     # Simulate finding docket if it is a test socket
                     response_data = await networking.get_json_response(self._test_server, timeout=1.5, headers=self._headers)
                 else:
-                    response_data = await networking.get_json_response(HQHeroReporter.GAME_INFO_URL, timeout=1.5, headers=self._headers)
+                    response_data = await networking.get_json_response(Herobrain.GAME_INFO_URL, timeout=1.5, headers=self._headers)
             except (ContentTypeError, asyncio.TimeoutError, ClientConnectorError) as e:
                 self._log.error(f"_find_game: Could not get game info from server ({e}), retrying...")
                 await asyncio.sleep(5)

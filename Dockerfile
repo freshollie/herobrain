@@ -1,7 +1,7 @@
 FROM python:3.6
 RUN pip install pipenv
 
-WORKDIR /hqhero-reporter
+WORKDIR /herobrain
 
 COPY Pipfile.lock Pipfile ./
 RUN pipenv install --deploy --system --ignore-pipfile && \
@@ -10,4 +10,4 @@ RUN pipenv install --deploy --system --ignore-pipfile && \
 
 COPY src src
 
-ENTRYPOINT ["python3.6", "-u", "/hqhero-reporter/src/run.py"]
+ENTRYPOINT ["python3.6", "-u", "/herobrain/src/run.py"]

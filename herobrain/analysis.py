@@ -9,8 +9,8 @@ from nltk import word_tokenize
 from nltk.tag.perceptron import PerceptronTagger
 from nltk.tokenize import RegexpTokenizer
 
-import search
-import localisation
+from herobrain import search
+from herobrain import localisation
 
 log = logging.getLogger(__name__)
 
