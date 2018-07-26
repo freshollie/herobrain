@@ -11,4 +11,5 @@ RUN pipenv install --deploy --system --ignore-pipfile && \
 COPY herobrain herobrain
 COPY run.py .
 
+# The u is for unbuffered output, so that docker logs works properly
 ENTRYPOINT ["python3.6", "-u", "/herobrain/run.py"]

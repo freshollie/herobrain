@@ -3,7 +3,7 @@ pipelines:
     master:
       - step:
           name: build
-          max-time: 3
+          max-time: 5
           services:
             - docker
           script:
@@ -24,7 +24,7 @@ pipelines:
     dev:
       - step:
           name: build
-          max-time: 3
+          max-time: 5
           services:
             - docker
           script:

@@ -27,11 +27,11 @@ class GameHandler:
         self._interface = interface
         self._event_loop = asyncio.get_event_loop()
     
-    async def _play_round(self, question, answers, number, num_questions):
+    async def _on_new_round(self, question, choices, number, num_questions):
         start_time = time.time()
-        self._interface.report_question(question, answers, number, num_questions)
+        self._interface.report_question(question, choices, number, num_questions)
 
-        analyser = QuestionAnalyser(question, answers)
+        analyser = QuestionAnalyser(question, choices)
         self._interface.report_analysis(analyser.get_analysis(), number)
 
         # Find the probability of answers
@@ -48,12 +48,12 @@ class GameHandler:
         if message["type"] == "question":
             # decode the question
             question_str = unidecode(message["question"])
-            answers = [unidecode(ans["text"]) for ans in message["answers"]]
+            choices = [unidecode(ans["text"]) for ans in message["answers"]]
 
             question_num = message['questionNumber']
             num_questions = message['questionCount']
 
-            await self._play_round(question_str, answers, question_num, num_questions)
+            await self._on_new_round(question_str, choices, question_num, num_questions)
         
         # Round is over
         elif message["type"] == "questionSummary":    

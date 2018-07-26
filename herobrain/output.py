@@ -7,7 +7,7 @@ import datetime
 
 QUIET = False
 
-class HQHeroInterface:
+class HQheroInterface:
     WAITING = "/hero/waiting"
     STARTING = "/hero/starting"
     NEWROUND = "/hero/round"
@@ -17,7 +17,7 @@ class HQHeroInterface:
     FINISHED = "/hero/ended"
     
     def __init__(self, interface_addr):
-        self._log = logging.getLogger(HQHeroInterface.__name__)
+        self._log = logging.getLogger(HQheroInterface.__name__)
         self._log.info("Initialising for %s" % interface_addr)
 
         self._addr = interface_addr
@@ -41,11 +41,19 @@ class HQHeroInterface:
                 async with session.post(url, timeout=20, json=payload) as response:
                     data = await response.json()
                     if "success" not in data:
-                        self._log.error(f"Error response from hqwack for {url}: {data}")
+                        self._log.error(f"Error response from hqhero for {url}: {data}")
             except (aiohttp.ClientError, aiohttp.client_exceptions.ClientConnectorError, ConnectionRefusedError) as e:
                 self._log.error(f"Could not send info to {url}: {e}")
     
     def _send_info(self, endpoint, info={}):
+        '''
+        Send info is a wrapper around __do_send
+        to push the send job onto the asyncio loop.
+
+        This means that sending to hqhero does not block
+        the brain from continueing to predict the next round
+        '''
+
         asyncio.ensure_future(self.__do_send(endpoint, info))
 
     def _print(self, s=None):
@@ -62,12 +70,12 @@ class HQHeroInterface:
             self._print("Waiting for next game")
             self._print("Next game: %s" % next_game_time.isoformat())
             self._print("Next prize: %s" % next_prize)
-            self._send_info(HQHeroInterface.WAITING, 
+            self._send_info(HQheroInterface.WAITING, 
                             {"prize": next_prize, 
                             "nextGame": next_game_time.isoformat()})
         else:
             self._print("Next game not scheduled")
-            self._send_info(HQHeroInterface.WAITING, 
+            self._send_info(HQheroInterface.WAITING, 
                             {"prize": None, 
                             "nextGame": None})
                             
@@ -78,7 +86,7 @@ class HQHeroInterface:
         self._round_num = 0
         self._predicted_answer = None
 
-        self._send_info(HQHeroInterface.STARTING)
+        self._send_info(HQheroInterface.STARTING)
     
     def report_question(self, question, answers, question_num, num_questions):
         self._print_gap()
@@ -92,7 +100,7 @@ class HQHeroInterface:
 
         self._round_num = question_num
 
-        self._send_info(HQHeroInterface.NEWROUND, 
+        self._send_info(HQheroInterface.NEWROUND, 
                         {"question": {"question": question, "choices": answers}, 
                          "numRounds": num_questions,
                          "num": question_num})
@@ -102,7 +110,7 @@ class HQHeroInterface:
         for key in analysis:
             self._print(f"- {key}: {analysis[key]}")
         
-        self._send_info(HQHeroInterface.ANALYSIS, {"analysis": analysis, "roundNum": question_num})
+        self._send_info(HQheroInterface.ANALYSIS, {"analysis": analysis, "roundNum": question_num})
 
     def report_prediction(self, question_num, answer_predictions, speed, analysis):
         self._print()
@@ -116,7 +124,7 @@ class HQHeroInterface:
         self._print()
         self._print(f"Speed: {speed}s")
 
-        self._send_info(HQHeroInterface.PREDICTION, 
+        self._send_info(HQheroInterface.PREDICTION, 
                         {"prediction": {"answers": answer_predictions, 
                                        "best": self._predicted_answer, 
                                        "speed": speed} , 
@@ -157,7 +165,7 @@ class HQHeroInterface:
 
         self._print(f"Prediction score: {sum(self._correct_counts)}/{len(self._correct_counts)}")
 
-        self._send_info(HQHeroInterface.ANSWERS, 
+        self._send_info(HQheroInterface.ANSWERS, 
                         {"conclusion": {"answers": answer_counts, 
                                         "answer": correct_answer, 
                                         "eliminated": eliminated,
