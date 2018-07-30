@@ -33,6 +33,10 @@ optional arguments:
   --log-level {critical,error,warning,info,debug}
 ```
 
+## Languages
+
+Herobrain is designed for English and German. However the German processing is not amazing.
+
 ## Production
 
 herobrain is designed for use with docker. See the example `docker-compose.yml`
