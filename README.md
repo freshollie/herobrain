@@ -6,7 +6,7 @@ Herobrain was designed for use with [hqhero](https://github.com/freshollie/hqher
 
 ## Running
 
-Herobrain uses `pipenv` for package management.
+Herobrain uses `pipenv` for dependency management.
 
 1. `pipenv install --dev` will install all the required packages to ba able to run Herobrain
 1. `pipenv run nltk-install` to install the language resources
@@ -63,3 +63,17 @@ networks:
 
 `bitbucket-piplines` were used to automatically build and deploy the herobrain image to hqhero.com.
 this file can be edited for your bitbucket repository.
+
+## Contributing
+
+Any contribution to herobrain is welcome. Please submit pull requests with new features. Please make
+an issue with any bugs or feature requests.
+
+## License
+
+herobrain is released under the `MIT` license. Please see file attribution where applicable.
+
+## Credits
+
+A very special thank you to [Kevin Wu](https://github.com/Exaphis) for the original
+sourcecode that herobrain is based off.
