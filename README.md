@@ -37,5 +37,7 @@ optional arguments:
 
 herobrain is designed for use with docker. See the example `docker-compose.yml`
 
+## Auto-deployment
 
-
+`bitbucket-piplines` were used to automatically build and deploy the herobrain image to hqhero.com.
+this file can be edited for your bitbucket repository.
