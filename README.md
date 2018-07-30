@@ -33,6 +33,12 @@ optional arguments:
   --log-level {critical,error,warning,info,debug}
 ```
 
+### Simulating questions
+
+In order to simulate questions for herobrain, [trivia-sim](https://github.com/freshollie/trivia-sim)
+can be used to create a simulated hqtriva API. Use `--test-api` to point herobrain to trivia-sim.
+Please see trivia-sim documentation for further information.
+
 ## Languages
 
 Herobrain is designed for English and German. However the German processing is not amazing.
