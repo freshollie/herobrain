@@ -1,3 +1,9 @@
+'''
+MIT License
+
+Copyright (c) 2018, Oliver Bell <freshollie@gmail.com>
+'''
+
 import aiohttp
 import logging
 import asyncio

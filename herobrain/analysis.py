@@ -1,3 +1,10 @@
+'''
+MIT License
+
+Copyright (c) 2018, Oliver Bell <freshollie@gmail.com> 
+                  & Kevin Wu <github.com/Exaphis>
+'''
+
 import asyncio
 import itertools
 import logging
