@@ -3,7 +3,7 @@ RUN pip install pipenv
 
 WORKDIR /herobrain
 
-COPY Pipfile.lock Pipfile ./
+COPY Pipfile.lock Pipfile nltk-install.sh ./
 RUN pipenv install --deploy --system --ignore-pipfile && \
     python3.6 -m nltk.downloader 'punkt' 'averaged_perceptron_tagger' 'stopwords' && \
     python3.6 -m textblob.download_corpora

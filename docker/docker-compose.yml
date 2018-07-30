@@ -2,7 +2,7 @@ version: '3'
 
 services:
   herobrain-uk:
-    image: "hqhero.com:5000/herobrain:master"
+    image: "freshollie/herobrain:master"
     networks:
       - hqhero-net
     command:

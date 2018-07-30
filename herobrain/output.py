@@ -7,7 +7,7 @@ import datetime
 
 QUIET = False
 
-class HQheroInterface:
+class HQHeroInterface:
     WAITING = "/hero/waiting"
     STARTING = "/hero/starting"
     NEWROUND = "/hero/round"
@@ -17,7 +17,7 @@ class HQheroInterface:
     FINISHED = "/hero/ended"
     
     def __init__(self, interface_addr):
-        self._log = logging.getLogger(HQheroInterface.__name__)
+        self._log = logging.getLogger(HQHeroInterface.__name__)
         self._log.info("Initialising for %s" % interface_addr)
 
         self._addr = interface_addr
@@ -70,12 +70,12 @@ class HQheroInterface:
             self._print("Waiting for next game")
             self._print("Next game: %s" % next_game_time.isoformat())
             self._print("Next prize: %s" % next_prize)
-            self._send_info(HQheroInterface.WAITING, 
+            self._send_info(HQHeroInterface.WAITING, 
                             {"prize": next_prize, 
                             "nextGame": next_game_time.isoformat()})
         else:
             self._print("Next game not scheduled")
-            self._send_info(HQheroInterface.WAITING, 
+            self._send_info(HQHeroInterface.WAITING, 
                             {"prize": None, 
                             "nextGame": None})
                             
@@ -86,7 +86,7 @@ class HQheroInterface:
         self._round_num = 0
         self._predicted_answer = None
 
-        self._send_info(HQheroInterface.STARTING)
+        self._send_info(HQHeroInterface.STARTING)
     
     def report_question(self, question, answers, question_num, num_questions):
         self._print_gap()
@@ -100,7 +100,7 @@ class HQheroInterface:
 
         self._round_num = question_num
 
-        self._send_info(HQheroInterface.NEWROUND, 
+        self._send_info(HQHeroInterface.NEWROUND, 
                         {"question": {"question": question, "choices": answers}, 
                          "numRounds": num_questions,
                          "num": question_num})
@@ -110,7 +110,7 @@ class HQheroInterface:
         for key in analysis:
             self._print(f"- {key}: {analysis[key]}")
         
-        self._send_info(HQheroInterface.ANALYSIS, {"analysis": analysis, "roundNum": question_num})
+        self._send_info(HQHeroInterface.ANALYSIS, {"analysis": analysis, "roundNum": question_num})
 
     def report_prediction(self, question_num, answer_predictions, speed, analysis):
         self._print()
@@ -124,7 +124,7 @@ class HQheroInterface:
         self._print()
         self._print(f"Speed: {speed}s")
 
-        self._send_info(HQheroInterface.PREDICTION, 
+        self._send_info(HQHeroInterface.PREDICTION, 
                         {"prediction": {"answers": answer_predictions, 
                                        "best": self._predicted_answer, 
                                        "speed": speed} , 
@@ -165,7 +165,7 @@ class HQheroInterface:
 
         self._print(f"Prediction score: {sum(self._correct_counts)}/{len(self._correct_counts)}")
 
-        self._send_info(HQheroInterface.ANSWERS, 
+        self._send_info(HQHeroInterface.ANSWERS, 
                         {"conclusion": {"answers": answer_counts, 
                                         "answer": correct_answer, 
                                         "eliminated": eliminated,
