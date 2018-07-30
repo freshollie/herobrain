@@ -6,7 +6,7 @@ Herobrain was designed for use with [hqhero](https://github.com/freshollie/hqher
 
 ## Running
 
-Herobrain is written using `pipenv` for package management.
+Herobrain uses `pipenv` for package management.
 
 1. `pipenv install --dev` will install all the required packages to ba able to run Herobrain
 1. `pipenv run nltk-install` to install the language resources
