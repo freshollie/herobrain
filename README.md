@@ -39,7 +39,25 @@ Herobrain is designed for English and German. However the German processing is n
 
 ## Production
 
-herobrain is designed for use with docker. See the example `docker-compose.yml`
+herobrain is designed for use with docker. An example service config
+
+```yml
+services:
+  herobrain-uk:
+    image: "freshollie/herobrain:master"
+    networks:
+      - hqhero-net
+    command:
+      - --token 
+      - TOKEN
+      - --hqhero 
+      - http://hqhero-uk:1029/
+      - --log-level 
+      - debug
+
+networks:
+  hqhero-net:
+```
 
 ## Auto-deployment
 
