@@ -1,3 +1,13 @@
+'''
+MIT License
+
+Copyright (c) 2018, Oliver Bell <freshollie@gmail.com>
+
+Get the bearer-token for your HQTrivia account.
+
+Status: broken
+'''
+
 import aiohttp
 import asyncio
 import sys

@@ -1,3 +1,9 @@
+'''
+MIT License
+
+Copyright (c) 2018, Oliver Bell <freshollie@gmail.com>
+'''
+
 from nltk.corpus import stopwords
 from textblob import TextBlob 
 from textblob_de import TextBlobDE

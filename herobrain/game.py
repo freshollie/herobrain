@@ -1,3 +1,9 @@
+'''
+MIT License
+
+Copyright (c) 2018, Oliver Bell <freshollie@gmail.com> 
+'''
+
 import asyncio
 import datetime
 import json

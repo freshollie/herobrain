@@ -1,3 +1,9 @@
+'''
+MIT License
+
+Copyright (c) 2018, Kevin Wu <github.com/Exaphis>
+'''
+
 import logging
 import re
 from html import unescape

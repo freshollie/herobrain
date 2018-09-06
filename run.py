@@ -1,3 +1,10 @@
+'''
+MIT License
+
+Copyright (c) 2018, Oliver Bell <freshollie@gmail.com> 
+                  & Kevin Wu <github.com/Exaphis>
+'''
+
 import logging
 import argparse
 from herobrain import Herobrain
