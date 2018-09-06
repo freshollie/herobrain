@@ -2,8 +2,18 @@ import aiohttp
 import asyncio
 import sys
 
+HEADERS = {
+    "x-hq-device": "iPhone9,3",
+    "x-hq-client": "iOS/1.3.18 b106",
+    "x-hq-timezone": "Europe/Lodnon",
+    "x-hq-country": "gb",
+    "x-hq-lang": "en",
+    "x-hq-test-key": "",
+    "User-Agent": "HQ-iOS/106 CFNetwork/902.2 Darwin17.7.0"
+}
+
 async def make_post(url, data):
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers=HEADERS) as session:
         async with session.post(url, data=data) as response:
             return await response.json()
 
