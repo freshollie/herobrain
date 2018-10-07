@@ -24,7 +24,7 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gec
 
 def get_google_links(page, num_results):
     soup = BeautifulSoup(page, "html.parser")
-    results = soup.findAll("h3", {"class": "r"})
+    results = soup.findAll("div", {"class": "r"})
 
     links = []
     for r in results:

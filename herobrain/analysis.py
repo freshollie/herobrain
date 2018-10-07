@@ -333,17 +333,3 @@ class QuestionAnalyser:
             self._log.debug(f" - {answer} - {round(probs[answer] * 100)}%")
 
         return probs, methods
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level="DEBUG")
-    async def test_en():
-        localisation.set_as(localisation.ENGLISH_UK)
-        print(await QuestionAnalyser("Which colour is NOT in on the Italian flag?", ["Green", "Red", "Blue"]).find_answers())
-    
-    async def test_de():
-        localisation.set_as(localisation.GERMANY)
-        print(await QuestionAnalyser("Wenn man \"Doppelkopf\" spielt, dann spielt man...?", ["Russisch Roulette falsh", "Ein Kartenspiel", "an sich rum"]).find_answers())
-    
-    asyncio.get_event_loop().run_until_complete(test_en())
-    asyncio.get_event_loop().run_until_complete(test_de())
